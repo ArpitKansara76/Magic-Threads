@@ -1,0 +1,698 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { supabase, uploadProductImage } from '../../utils/supabase/client';
+import { Product } from '../../data/products';
+
+const formatCategory = (cat: string) => {
+  if (cat === 'chaniya-choli') return 'Chaniya Choli';
+  if (cat === 'home-decor') return 'Home Decor';
+  if (cat === 'cushion-covers') return 'Cushion Covers';
+  return cat;
+};
+
+export default function AdminPage() {
+  const router = useRouter();
+  
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [userEmail, setUserEmail] = useState<string>('');
+  
+  // Dashboard Data
+  const [productsList, setProductsList] = useState<Product[]>([]);
+  const [totalUsersCount, setTotalUsersCount] = useState<number>(0);
+  const [loadingData, setLoadingData] = useState<boolean>(true);
+
+  // Form Fields for new item
+  const [itemId, setItemId] = useState('');
+  const [itemName, setItemName] = useState('');
+  const [itemCategory, setItemCategory] = useState<'chaniya-choli' | 'home-decor' | 'cushion-covers'>('chaniya-choli');
+  const [itemPrice, setItemPrice] = useState('');
+  const [itemOriginalPrice, setItemOriginalPrice] = useState('');
+  const [itemFabric, setItemFabric] = useState('');
+  const [itemWorkType, setItemWorkType] = useState('');
+  const [itemFlare, setItemFlare] = useState('');
+  const [itemBlouse, setItemBlouse] = useState('');
+  const [itemDupatta, setItemDupatta] = useState('');
+  const [itemTag, setItemTag] = useState('');
+  const [itemImage, setItemImage] = useState('/images/navratri.png'); // Default preset
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [itemDescription, setItemDescription] = useState('');
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  // Status messages
+  const [formMessage, setFormMessage] = useState<string | null>(null);
+  const [formError, setFormError] = useState<boolean>(false);
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
+
+  // Check auth and role on mount
+  useEffect(() => {
+    const checkAdminSession = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setIsAdmin(false);
+          router.push('/auth');
+          return;
+        }
+
+        setUserEmail(user.email || '');
+
+        // Fetch user profile role
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        if (error || !profile || profile.role !== 'admin') {
+          setIsAdmin(false);
+        } else {
+          setIsAdmin(true);
+          fetchDashboardData();
+        }
+      } catch (err) {
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdminSession();
+  }, [router]);
+
+  // Fetch products and user count
+  const fetchDashboardData = async () => {
+    setLoadingData(true);
+    try {
+      // Fetch products
+      const { data: products, error: pError } = await supabase
+        .from('products')
+        .select('*')
+        .async(); // Uses helper in mock/real client
+      
+      if (!pError && products) {
+        setProductsList(products);
+      }
+
+      // Fetch user profile count
+      const { data: profiles, error: uError } = await supabase
+        .from('profiles')
+        .select('*')
+        .async();
+      
+      if (!uError && profiles) {
+        setTotalUsersCount(profiles.length);
+      }
+    } catch (e) {
+      console.error("Failed to fetch admin stats", e);
+    } finally {
+      setLoadingData(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
+  };
+
+  const handleEditClick = (product: Product) => {
+    setIsEditMode(true);
+    setItemId(product.id);
+    setItemName(product.name);
+    setItemCategory(product.category as any);
+    setItemPrice(product.price.toString());
+    setItemOriginalPrice(product.originalPrice.toString());
+    setItemFabric(product.fabric);
+    setItemWorkType(product.workType);
+    setItemFlare(product.flare || '');
+    setItemBlouse(product.blouse || '');
+    setItemDupatta(product.dupatta || '');
+    setItemTag(product.tag || '');
+    setItemImage(product.image);
+    setItemDescription(product.description);
+    setImageFile(null);
+    setImagePreviewUrl(null);
+    setFormMessage(null);
+    setFormError(false);
+
+    // Scroll to form smoothly
+    const formElement = document.querySelector('.admin-form-panel');
+    if (formElement) {
+      formElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditMode(false);
+    setItemId('');
+    setItemName('');
+    setItemCategory('chaniya-choli');
+    setItemPrice('');
+    setItemOriginalPrice('');
+    setItemFabric('');
+    setItemWorkType('');
+    setItemFlare('');
+    setItemBlouse('');
+    setItemDupatta('');
+    setItemTag('');
+    setItemImage('/images/navratri.png');
+    setItemDescription('');
+    setImageFile(null);
+    setImagePreviewUrl(null);
+    setFormMessage(null);
+    setFormError(false);
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormMessage(null);
+    setFormError(false);
+
+    // Basic Validation
+    if (!itemId.trim() || !itemName.trim() || !itemPrice || !itemOriginalPrice || !itemFabric.trim() || !itemWorkType.trim()) {
+      setFormError(true);
+      setFormMessage("Please fill in all required fields (*).");
+      return;
+    }
+
+    // ID Format Validation (only for new creations)
+    if (!isEditMode) {
+      if (!/^[a-zA-Z0-9_-]+$/.test(itemId)) {
+        setFormError(true);
+        setFormMessage("ID Code must contain only alphanumeric characters, dashes, or underscores (e.g., cc-007).");
+        return;
+      }
+
+      if (productsList.some(p => p.id.toLowerCase() === itemId.toLowerCase())) {
+        setFormError(true);
+        setFormMessage(`Product with ID Code "${itemId}" already exists in the catalog.`);
+        return;
+      }
+    }
+
+    setSubmitting(true);
+
+    const priceNum = parseFloat(itemPrice);
+    const originalPriceNum = parseFloat(itemOriginalPrice);
+    const discountPercent = Math.round(((originalPriceNum - priceNum) / originalPriceNum) * 100);
+
+    try {
+      let imageUrl = itemImage;
+      
+      // Upload file if selected
+      if (imageFile) {
+        setFormMessage("Uploading product photo to storage...");
+        imageUrl = await uploadProductImage(imageFile);
+      }
+
+      const productPayload: Product = {
+        id: itemId.trim().toLowerCase(),
+        name: itemName.trim(),
+        category: itemCategory,
+        price: priceNum,
+        originalPrice: originalPriceNum,
+        discount: discountPercent > 0 ? discountPercent : 0,
+        image: imageUrl,
+        description: itemDescription.trim() || "Handcrafted designer Chaniya Choli set.",
+        fabric: itemFabric.trim(),
+        workType: itemWorkType.trim(),
+        flare: itemFlare.trim() || "5.5 Meters",
+        blouse: itemBlouse.trim() || "Semi-stitched",
+        dupatta: itemDupatta.trim() || "2.25 Meters",
+        isAvailable: true,
+        tag: itemTag.trim() || undefined
+      };
+
+      if (isEditMode) {
+        // UPDATE MODE
+        const { error } = await supabase
+          .from('products')
+          .update(productPayload)
+          .eq('id', itemId.trim().toLowerCase())
+          .async();
+
+        if (error) throw error;
+        
+        setFormError(false);
+        setFormMessage(`Success! "${itemName}" has been updated.`);
+      } else {
+        // CREATE MODE
+        const { error } = await supabase
+          .from('products')
+          .insert([productPayload])
+          .async();
+
+        if (error) throw error;
+
+        setFormError(false);
+        setFormMessage(`Success! "${itemName}" has been added to the catalog.`);
+      }
+      
+      // Reset Form
+      setIsEditMode(false);
+      setItemId('');
+      setItemName('');
+      setItemCategory('chaniya-choli');
+      setItemPrice('');
+      setItemOriginalPrice('');
+      setItemFabric('');
+      setItemWorkType('');
+      setItemFlare('');
+      setItemBlouse('');
+      setItemDupatta('');
+      setItemTag('');
+      setItemDescription('');
+      setItemImage('/images/navratri.png');
+      setImageFile(null);
+      setImagePreviewUrl(null);
+
+      // Refresh listings
+      fetchDashboardData();
+    } catch (err: any) {
+      setFormError(true);
+      setFormMessage(err.message || "Failed to save product.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteProduct = async (productId: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete "${name}" from the catalog?`)) {
+      return;
+    }
+
+    try {
+      // In real Supabase RLS policies block this if not admin.
+      // In mockClient it removes from localStorage.
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId)
+        .async(); // standard trigger
+
+      // Let's refresh mock local data directly by updating state
+      const { data: refreshedProducts } = await supabase
+        .from('products')
+        .select('*')
+        .async();
+      
+      if (refreshedProducts) {
+        setProductsList(refreshedProducts);
+      }
+      
+      alert(`Deleted ${name} successfully.`);
+    } catch (e) {
+      alert("Failed to delete product.");
+    }
+  };
+
+  // Render Loader
+  if (isAdmin === null) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', color: 'var(--color-gold)' }}>
+        <h2>Verifying Administrator Session...</h2>
+      </div>
+    );
+  }
+
+  // Render Access Denied
+  if (isAdmin === false) {
+    return (
+      <div className="auth-container">
+        <div className="auth-card" style={{ textAlign: 'center', maxWidth: '500px' }}>
+          <span className="brand-logo-text" style={{ fontSize: '2.5rem' }}>Access Denied</span>
+          <p style={{ margin: '1.5rem 0', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
+            Oops! You do not have administrator privileges. Only accounts with the role <strong>admin</strong> in the database profiles can access this module.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <a href="/" className="btn-auth" style={{ textDecoration: 'none' }}>Back to Shop Catalog</a>
+            <button className="btn-signout" onClick={handleSignOut}>Sign Out & Try Another Account</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Calculate statistics
+  const totalValue = productsList.reduce((acc, p) => acc + p.price, 0);
+
+  return (
+    <div className="app-container">
+      {/* HEADER */}
+      <header className="app-header">
+        <div className="nav-container">
+          <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', textDecoration: 'none' }}>
+            <img src="/images/logo.png" alt="Magic Threads Logo" style={{ width: '56px', height: '56px', borderRadius: '50%', border: '2px solid var(--color-gold)' }} />
+            <div>
+              <span className="brand-logo-text" style={{ display: 'block', fontSize: '1.25rem', fontWeight: '700', letterSpacing: '1px' }}>MAGIC THREADS</span>
+              <div className="brand-logo-sub" style={{ fontSize: '0.65rem' }}>Admin Portal</div>
+            </div>
+          </a>
+
+          <div className="user-nav-profile">
+            <span className="badge-role">Admin</span>
+            <span className="user-nav-email" title={userEmail}>{userEmail}</span>
+            <button className="btn-signout" onClick={handleSignOut}>Sign Out</button>
+          </div>
+        </div>
+      </header>
+
+      {/* DASHBOARD CONTENT */}
+      <main className="admin-container">
+        <div className="admin-header-row">
+          <div className="admin-title-group">
+            <h1 className="admin-title">Catalog Control</h1>
+            <p className="admin-subtitle">Add new Chaniya Cholis or manage current listings in the database.</p>
+          </div>
+          <a href="/" className="btn-details" style={{ textDecoration: 'none', border: '1px solid var(--color-gold)' }}>
+            &larr; View Live Shop
+          </a>
+        </div>
+
+        {/* STATS SECTION */}
+        <section className="admin-stats-grid">
+          <div className="admin-stat-card">
+            <span className="admin-stat-label">Products Active</span>
+            <span className="admin-stat-val">{productsList.length} Items</span>
+          </div>
+          <div className="admin-stat-card">
+            <span className="admin-stat-label">Registered Accounts</span>
+            <span className="admin-stat-val">{totalUsersCount} Users</span>
+          </div>
+          <div className="admin-stat-card">
+            <span className="admin-stat-label">Est. Showcase Value</span>
+            <span className="admin-stat-val">₹{totalValue.toLocaleString('en-IN')}</span>
+          </div>
+        </section>
+
+        {/* ADMIN WORK GRID */}
+        <div className="admin-grid">
+          
+          {/* 1. ADD NEW ITEM FORM */}
+          <section className="admin-form-panel">
+            <h2 className="admin-panel-title">{isEditMode ? `Edit Product: ${itemName}` : "Add New Chaniya Choli"}</h2>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: '-0.5rem', marginBottom: '1rem' }}>
+              {isEditMode ? "Modify details of this existing product listing." : "Fill out the details. Items will be appended to the catalog instantly."}
+            </p>
+
+            {formMessage && (
+              <div style={{
+                padding: '0.8rem 1rem',
+                borderRadius: '10px',
+                fontSize: '0.9rem',
+                backgroundColor: formError ? 'rgba(231, 76, 60, 0.15)' : 'rgba(46, 204, 113, 0.15)',
+                border: `1px solid ${formError ? '#e74c3c' : '#2ecc71'}`,
+                color: formError ? '#ff7675' : '#2ecc71',
+                textAlign: 'center'
+              }}>
+                {formMessage}
+              </div>
+            )}
+
+            <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '1rem' }}>
+                <div className="form-group">
+                  <label className="form-label">ID Code *</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="e.g. cc-007"
+                    value={itemId}
+                    onChange={(e) => setItemId(e.target.value)}
+                    disabled={isEditMode}
+                    required
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Category *</label>
+                  <select
+                    className="form-select"
+                    value={itemCategory}
+                    onChange={(e) => setItemCategory(e.target.value as any)}
+                  >
+                    <option value="chaniya-choli">Chaniya Choli</option>
+                    <option value="home-decor">Home Decor</option>
+                    <option value="cushion-covers">Cushion Covers</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Product Name *</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g. Royal Emerald Patola Lehenga"
+                  value={itemName}
+                  onChange={(e) => setItemName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="form-group">
+                  <label className="form-label">Selling Price (₹) *</label>
+                  <input
+                    type="number"
+                    className="form-input"
+                    placeholder="e.g. 7499"
+                    value={itemPrice}
+                    onChange={(e) => setItemPrice(e.target.value)}
+                    min="1"
+                    required
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Original Price (₹) *</label>
+                  <input
+                    type="number"
+                    className="form-input"
+                    placeholder="e.g. 11999"
+                    value={itemOriginalPrice}
+                    onChange={(e) => setItemOriginalPrice(e.target.value)}
+                    min="1"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="form-group">
+                  <label className="form-label">Fabric / Material *</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="e.g. Pure Georgette"
+                    value={itemFabric}
+                    onChange={(e) => setItemFabric(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Embroidery / Work *</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="e.g. Real Mirror & Zari work"
+                    value={itemWorkType}
+                    onChange={(e) => setItemWorkType(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="form-group">
+                  <label className="form-label">Lehenga Ghera (Flare)</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="e.g. 6.5 Meters"
+                    value={itemFlare}
+                    onChange={(e) => setItemFlare(e.target.value)}
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Blouse Fitting Details</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="e.g. Stitched Size 38-42"
+                    value={itemBlouse}
+                    onChange={(e) => setItemBlouse(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="form-group">
+                  <label className="form-label">Dupatta Detail</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="e.g. 2.3 Mtrs Organza"
+                    value={itemDupatta}
+                    onChange={(e) => setItemDupatta(e.target.value)}
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Product Tag (Promo)</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="e.g. New Arrival"
+                    value={itemTag}
+                    onChange={(e) => setItemTag(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Upload Product Image</label>
+                <input
+                  type="file"
+                  className="form-input"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  style={{ display: 'block', padding: '0.5rem' }}
+                />
+                
+                {imagePreviewUrl ? (
+                  <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ width: '60px', height: '60px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--color-border-gold)', position: 'relative' }}>
+                      <img src={imagePreviewUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Photo loaded successfully</span>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+                    <label className="form-label" style={{ fontSize: '0.75rem' }}>Or Select Preset Backup Graphic</label>
+                    <select
+                      className="form-select"
+                      value={itemImage}
+                      onChange={(e) => setItemImage(e.target.value)}
+                    >
+                      <option value="/images/navratri.png">Chaniya Choli preset 1 (Vibrant model)</option>
+                      <option value="/images/bridal.png">Chaniya Choli preset 2 (Red Silk model)</option>
+                      <option value="/images/pastel.png">Chaniya Choli preset 3 (Pastel model)</option>
+                      <option value="/images/home_decor.png">Home Decor preset</option>
+                      <option value="/images/cushion_cover.png">Cushion Cover preset</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Product Description</label>
+                <textarea
+                  className="form-input form-textarea"
+                  placeholder="Provide a stunning narrative description of the Chaniya Choli..."
+                  value={itemDescription}
+                  onChange={(e) => setItemDescription(e.target.value)}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+                <button 
+                  type="submit" 
+                  className="btn-submit-inquiry btn-admin-primary"
+                  style={{ flex: 1 }}
+                  disabled={submitting}
+                >
+                  {submitting ? "Saving..." : isEditMode ? "Update Product" : "Add to Live Database"}
+                </button>
+                {isEditMode && (
+                  <button 
+                    type="button" 
+                    className="btn-admin-action"
+                    style={{ flex: 1, padding: '0.75rem' }}
+                    onClick={handleCancelEdit}
+                    disabled={submitting}
+                  >
+                    Cancel Edit
+                  </button>
+                )}
+              </div>
+            </form>
+          </section>
+
+          {/* 2. CATALOG MANAGEMENT LIST */}
+          <section className="admin-items-panel">
+            <h2 className="admin-panel-title">Active Products ({productsList.length})</h2>
+            
+            {loadingData ? (
+              <p style={{ color: 'var(--color-text-muted)' }}>Loading items list...</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '700px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                {productsList.map((product) => (
+                  <div className="admin-item-row" key={product.id}>
+                    <div className="admin-item-meta">
+                      <div className="admin-item-img-wrapper">
+                        <Image 
+                          src={product.image} 
+                          alt={product.name}
+                          width={50}
+                          height={50}
+                          className="admin-item-img"
+                        />
+                      </div>
+                      
+                      <div className="admin-item-info">
+                        <span className="admin-item-category">{formatCategory(product.category)}</span>
+                        <span className="admin-item-name">{product.name}</span>
+                        <span className="admin-item-price">
+                          ₹{product.price.toLocaleString('en-IN')}{" "}
+                          <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 'normal' }}>
+                            ₹{product.originalPrice.toLocaleString('en-IN')}
+                          </span>
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.2rem' }}>
+                          Code: <strong>{product.id}</strong> | Fabric: {product.fabric}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="admin-item-actions">
+                      <button 
+                        className="btn-admin-action btn-admin-edit"
+                        onClick={() => handleEditClick(product)}
+                      >
+                        Edit
+                      </button>
+                      <button 
+                        className="btn-admin-action"
+                        onClick={() => handleDeleteProduct(product.id, product.name)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                {productsList.length === 0 && (
+                  <p style={{ color: 'var(--color-text-muted)', textAlign: 'center', padding: '2rem' }}>
+                    No products in the catalog yet. Add one using the form.
+                  </p>
+                )}
+              </div>
+            )}
+          </section>
+        </div>
+      </main>
+    </div>
+  );
+}
