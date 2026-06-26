@@ -1725,4 +1725,212 @@ h1, h2, h3, h4, h5, h6 {
   background: #000;
 }
 
+/* Product Detail Tabs */
+.product-details-tabs {
+  display: flex;
+  border-bottom: 2px solid rgba(212, 175, 55, 0.15);
+  margin-bottom: 1.5rem;
+  gap: 0.5rem;
+  overflow-x: auto;
+}
 
+.details-tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--color-text-muted);
+  padding: 0.6rem 1rem;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+  white-space: nowrap;
+}
+
+.details-tab-btn:hover {
+  color: var(--color-gold-bright);
+}
+
+.details-tab-btn.active {
+  color: var(--color-gold-bright);
+  border-bottom-color: var(--color-gold);
+}
+
+/* Tabs Panel content */
+.tab-pane-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.spec-section-card,
+.highlights-section-card,
+.care-section-card,
+.note-section-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(212, 175, 55, 0.12);
+  border-radius: 12px;
+  padding: 1.2rem;
+}
+
+.spec-section-title {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  color: var(--color-gold-bright);
+  margin-bottom: 0.75rem;
+  border-bottom: 1px dashed rgba(212, 175, 55, 0.2);
+  padding-bottom: 0.4rem;
+}
+
+/* Quote style */
+.festive-quote {
+  border-left: 3px solid var(--color-gold);
+  padding: 0.75rem 1.25rem;
+  margin: 0.5rem 0;
+  background: rgba(197, 155, 39, 0.05);
+  border-radius: 0 12px 12px 0;
+  position: relative;
+}
+
+.festive-quote p {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.festive-quote cite {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--color-gold-bright);
+  font-weight: 700;
+  display: block;
+}
+
+/* Lists styling */
+.highlights-list,
+.care-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0;
+  margin: 0;
+}
+
+.highlights-list li,
+.care-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+}
+
+.check-icon {
+  color: #2ecc71;
+  font-weight: bold;
+}
+
+.bullet-icon {
+  color: var(--color-gold);
+  font-weight: bold;
+  line-height: 1;
+}
+
+.note-text {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+/* Sub-tabs for Specifications */
+.spec-sub-tabs {
+  display: flex;
+  background: rgba(212, 175, 55, 0.05);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  border-radius: 30px;
+  padding: 0.25rem;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.sub-tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border-radius: 25px;
+  transition: all var(--transition-speed);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.sub-tab-btn:hover {
+  color: var(--color-gold-bright);
+}
+
+.sub-tab-btn.active {
+  background: var(--color-gold-gradient);
+  color: #000000 !important;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(197, 155, 39, 0.25);
+}
+
+/* Admin Form Tabs */
+.admin-form-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  background: rgba(212, 175, 55, 0.05);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  border-radius: 12px;
+  padding: 0.25rem;
+  gap: 0.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-tab-btn {
+  flex: 1 1 auto;
+  min-width: 90px;
+  background: #FAF6EC !important;
+  border: 1px solid rgba(212, 175, 55, 0.45) !important;
+  color: #3D2D2A !important;
+  padding: 0.6rem 0.9rem;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all var(--transition-speed);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.admin-tab-btn:hover {
+  background: rgba(212, 175, 55, 0.15) !important;
+  color: var(--color-pink) !important;
+  border-color: rgba(212, 175, 55, 0.7) !important;
+}
+
+.admin-tab-btn.active {
+  background: var(--color-gold-gradient) !important;
+  color: #000000 !important;
+  font-weight: 700;
+  border-color: transparent !important;
+  box-shadow: 0 2px 8px rgba(197, 155, 39, 0.25);
+}

@@ -44,6 +44,12 @@ export default function CatalogPage() {
   // Toast notifications
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Active detail tab for product modal
+  const [activeDetailTab, setActiveDetailTab] = useState<'details' | 'highlights' | 'care'>('details');
+
+  // Active sub-tab for specifications (Lehenga, Blouse, Dupatta)
+  const [activeSpecSubTab, setActiveSpecSubTab] = useState<'lehenga' | 'blouse' | 'dupatta'>('lehenga');
+
   // Load products, user and sync bag on mount
   useEffect(() => {
     const initApp = async () => {
@@ -58,83 +64,63 @@ export default function CatalogPage() {
           setProductsList(initialProducts);
         }
 
-        // 2. Fetch active session user
+        // 2. Fetch logged in session
         const { data: { user: currentUser } } = await supabase.auth.getUser();
         if (currentUser) {
           setUser(currentUser);
           
-          // Fetch profile for role
+          // Fetch additional profile data (role)
           const { data: profile } = await supabase
             .from('profiles')
-            .select('*')
+            .select('role')
             .eq('id', currentUser.id)
             .single();
-          setUserProfile(profile);
+          if (profile) setUserProfile(profile);
 
-          // Fetch database synced cart items
+          // Sync database inquiry bag
           const { data: dbBag } = await supabase
             .from('inquiry_bag')
             .select('*')
             .eq('user_id', currentUser.id)
             .async();
-
-          if (dbBag && dbBag.length > 0) {
-            setInquiryBag(dbBag);
-            localStorage.setItem('chaniya_choli_inquiry_bag', JSON.stringify(dbBag));
-          } else {
-            // If DB bag is empty, load from localStorage if exists
-            const localBag = localStorage.getItem('chaniya_choli_inquiry_bag');
-            if (localBag) {
-              const parsed = JSON.parse(localBag) as Product[];
-              setInquiryBag(parsed);
-              // Sync localBag to DB
-              const rows = parsed.map(item => ({ user_id: currentUser.id, product_id: item.id }));
-              await supabase.from('inquiry_bag').insert(rows).async();
-            }
-          }
+          if (dbBag) setInquiryBag(dbBag);
         } else {
-          // Not logged in, load from localStorage
-          const localBag = localStorage.getItem('chaniya_choli_inquiry_bag');
-          if (localBag) {
-            setInquiryBag(JSON.parse(localBag));
-          }
+          // Local storage fallback for guests
+          const guestBag = localStorage.getItem('chaniya_choli_inquiry_bag');
+          if (guestBag) setInquiryBag(JSON.parse(guestBag));
         }
-      } catch (e) {
-        console.error("Initialization error", e);
-        // Fallback load
-        const localBag = localStorage.getItem('chaniya_choli_inquiry_bag');
-        if (localBag) setInquiryBag(JSON.parse(localBag));
+      } catch (err) {
+        console.error("Initialization error", err);
       } finally {
         setLoading(false);
       }
     };
-    
     initApp();
   }, []);
 
-  // Save/Sync bag
+  // Sync inquiry bag to localStorage / database when it changes
   const saveBag = async (newBag: Product[]) => {
     setInquiryBag(newBag);
-    localStorage.setItem('chaniya_choli_inquiry_bag', JSON.stringify(newBag));
-    
-    // If logged in, sync changes to Supabase database
     if (user) {
       try {
-        // Clear all previous user bag rows
+        // Simple sync strategy: delete all and re-insert
         await supabase.from('inquiry_bag').delete().eq('user_id', user.id).async();
         
-        // Batch insert new rows
         if (newBag.length > 0) {
-          const rows = newBag.map(item => ({ user_id: user.id, product_id: item.id }));
+          const rows = newBag.map(item => ({
+            user_id: user.id,
+            product_id: item.id
+          }));
           await supabase.from('inquiry_bag').insert(rows).async();
         }
-      } catch (e) {
-        console.error("Failed to sync bag to database", e);
+      } catch (err) {
+        console.error("Failed to sync bag with db", err);
       }
+    } else {
+      localStorage.setItem('chaniya_choli_inquiry_bag', JSON.stringify(newBag));
     }
   };
 
-  // Toast helper
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => {
@@ -172,6 +158,8 @@ export default function CatalogPage() {
 
   const openProductDetails = (product: Product) => {
     setSelectedProduct(product);
+    setActiveDetailTab('details');
+    setActiveSpecSubTab('lehenga');
     if (product.video) {
       setActiveMedia({ type: 'video', url: product.video });
     } else {
@@ -471,8 +459,11 @@ export default function CatalogPage() {
                     id={`btn-inquire-card-${product.id}`}
                     onClick={(e) => openSingleInquiry(product, e)}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style={{marginRight: '2px'}}>
-                      <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" style={{marginRight: '6px', verticalAlign: 'middle', flexShrink: 0}}>
+                      <rect width="24" height="24" rx="6" fill="#25D366" />
+                      <g transform="translate(4, 4)">
+                        <path fill="#FFFFFF" d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.907h.004c4.368 0 7.926-3.558 7.93-7.93a7.9 7.9 0 0 0-2.327-5.643zM11.75 11.517a2.23 2.23 0 0 1-1.07.513c-.273.069-.51.137-.8.02-.284-.117-.508-.228-1.002-.556-1.032-.687-1.782-1.758-2.222-2.47-.07-.113-.098-.2-.04-.27.054-.067.118-.148.18-.22.062-.072.079-.123.117-.205.037-.082.02-.153-.01-.225-.03-.072-.27-.655-.37-.899-.098-.238-.198-.205-.27-.205a8.3 8.3 0 0 0-.414-.008c-.146 0-.383.056-.583.275-.2.22-.765.748-.765 1.823s.783 2.115.892 2.262c.11.147 1.54 2.352 3.732 3.298.52.224.927.359 1.243.46.523.167.997.143 1.374.088.42-.062 1.777-.726 2.027-1.428.25-.701.25-1.303.175-1.428-.075-.126-.27-.197-.57-.346z"/>
+                      </g>
                     </svg>
                     Inquire
                   </button>
@@ -480,11 +471,14 @@ export default function CatalogPage() {
                 
                 <button 
                   className="btn-add-bag"
-                  style={{ width: '100%', marginTop: '0.75rem' }}
+                  style={{ width: '100%', marginTop: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                   id={`btn-add-bag-${product.id}`}
                   onClick={(e) => handleAddToBag(product, e)}
                 >
-                  + Add to Bag
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style={{marginRight: '6px', verticalAlign: 'middle'}}>
+                    <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+                  </svg>
+                  Add to Bag
                 </button>
               </div>
             </article>
@@ -655,41 +649,307 @@ export default function CatalogPage() {
 
                 <p className="modal-desc">{selectedProduct.description}</p>
 
-                <h4 style={{fontFamily: 'var(--font-sans)', fontSize: '0.85rem', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '0.5rem', fontWeight: 600}}>
-                  Product Specifications
-                </h4>
+                {/* Tabs Selector (Only shown if product has lehengaDetails) */}
+                {selectedProduct.lehengaDetails ? (
+                  <div className="product-details-tabs">
+                    <button 
+                      className={`details-tab-btn ${activeDetailTab === 'details' ? 'active' : ''}`}
+                      onClick={() => setActiveDetailTab('details')}
+                    >
+                      Specifications
+                    </button>
+                    {selectedProduct.highlights && (
+                      <button 
+                        className={`details-tab-btn ${activeDetailTab === 'highlights' ? 'active' : ''}`}
+                        onClick={() => setActiveDetailTab('highlights')}
+                      >
+                        Highlights
+                      </button>
+                    )}
+                    {selectedProduct.careInstructions && (
+                      <button 
+                        className={`details-tab-btn ${activeDetailTab === 'care' ? 'active' : ''}`}
+                        onClick={() => setActiveDetailTab('care')}
+                      >
+                        Care & Note
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <h4 style={{fontFamily: 'var(--font-sans)', fontSize: '0.85rem', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '0.5rem', fontWeight: 600}}>
+                    Product Specifications
+                  </h4>
+                )}
                 
-                <table className="specs-table">
-                  <tbody>
-                    <tr>
-                      <td className="spec-label">Fabric / Material</td>
-                      <td className="spec-val">{selectedProduct.fabric}</td>
-                    </tr>
-                    <tr>
-                      <td className="spec-label">Embroidery & Work</td>
-                      <td className="spec-val">{selectedProduct.workType}</td>
-                    </tr>
-                    <tr>
-                      <td className="spec-label">Lehenga Ghera (Flare)</td>
-                      <td className="spec-val">{selectedProduct.flare}</td>
-                    </tr>
-                    <tr>
-                      <td className="spec-label">Blouse Style</td>
-                      <td className="spec-val">{selectedProduct.blouse}</td>
-                    </tr>
-                    <tr>
-                      <td className="spec-label">Dupatta Detail</td>
-                      <td className="spec-val">{selectedProduct.dupatta}</td>
-                    </tr>
-                  </tbody>
-                </table>
+                {/* Tab content rendering */}
+                {selectedProduct.lehengaDetails ? (
+                  <div style={{ marginBottom: '1.5rem', flexGrow: 1, overflowY: 'auto', paddingRight: '4px' }}>
+                    {activeDetailTab === 'details' && (
+                      <div className="tab-pane-content">
+                        {/* Sub-tabs Selector for Lehenga/Blouse/Dupatta */}
+                        <div className="spec-sub-tabs">
+                          <button 
+                            className={`sub-tab-btn ${activeSpecSubTab === 'lehenga' ? 'active' : ''}`}
+                            onClick={() => setActiveSpecSubTab('lehenga')}
+                          >
+                            👗 Lehenga
+                          </button>
+                          <button 
+                            className={`sub-tab-btn ${activeSpecSubTab === 'blouse' ? 'active' : ''}`}
+                            onClick={() => setActiveSpecSubTab('blouse')}
+                          >
+                            👚 Blouse
+                          </button>
+                          <button 
+                            className={`sub-tab-btn ${activeSpecSubTab === 'dupatta' ? 'active' : ''}`}
+                            onClick={() => setActiveSpecSubTab('dupatta')}
+                          >
+                            🧣 Dupatta
+                          </button>
+                        </div>
+
+                        {/* Lehenga Details */}
+                        {activeSpecSubTab === 'lehenga' && selectedProduct.lehengaDetails && (
+                          <div className="spec-section-card">
+                            <h5 className="spec-section-title">👗 Lehenga (Skirt) Details</h5>
+                            <table className="specs-table" style={{ marginBottom: 0 }}>
+                              <tbody>
+                                {selectedProduct.lehengaDetails.fabric && (
+                                  <tr>
+                                    <td className="spec-label">Fabric</td>
+                                    <td className="spec-val">{selectedProduct.lehengaDetails.fabric}</td>
+                                  </tr>
+                                )}
+                                {selectedProduct.lehengaDetails.color && (
+                                  <tr>
+                                    <td className="spec-label">Colour</td>
+                                    <td className="spec-val">{selectedProduct.lehengaDetails.color}</td>
+                                  </tr>
+                                )}
+                                {selectedProduct.lehengaDetails.flair && (
+                                  <tr>
+                                    <td className="spec-label">Flair</td>
+                                    <td className="spec-val">{selectedProduct.lehengaDetails.flair}</td>
+                                  </tr>
+                                )}
+                                {selectedProduct.lehengaDetails.waist && (
+                                  <tr>
+                                    <td className="spec-label">Waist Size</td>
+                                    <td className="spec-val">{selectedProduct.lehengaDetails.waist}</td>
+                                  </tr>
+                                )}
+                                {selectedProduct.lehengaDetails.length && (
+                                  <tr>
+                                    <td className="spec-label">Length</td>
+                                    <td className="spec-val">{selectedProduct.lehengaDetails.length}</td>
+                                  </tr>
+                                )}
+                                {selectedProduct.lehengaDetails.work && (
+                                  <tr>
+                                    <td className="spec-label">Work / Art</td>
+                                    <td className="spec-val">{selectedProduct.lehengaDetails.work}</td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+
+                        {/* Blouse Details */}
+                        {activeSpecSubTab === 'blouse' && selectedProduct.blouseDetails && (
+                          <div className="spec-section-card">
+                            <h5 className="spec-section-title">👚 Blouse (Choli) Details</h5>
+                            <table className="specs-table" style={{ marginBottom: 0 }}>
+                              <tbody>
+                                {selectedProduct.blouseDetails.fabric && (
+                                  <tr>
+                                    <td className="spec-label">Fabric</td>
+                                    <td className="spec-val">{selectedProduct.blouseDetails.fabric}</td>
+                                  </tr>
+                                )}
+                                {selectedProduct.blouseDetails.color && (
+                                  <tr>
+                                    <td className="spec-label">Colour</td>
+                                    <td className="spec-val">{selectedProduct.blouseDetails.color}</td>
+                                  </tr>
+                                )}
+                                {selectedProduct.blouseDetails.style && (
+                                  <tr>
+                                    <td className="spec-label">Style</td>
+                                    <td className="spec-val">{selectedProduct.blouseDetails.style}</td>
+                                  </tr>
+                                )}
+                                {selectedProduct.blouseDetails.sleeves && (
+                                  <tr>
+                                    <td className="spec-label">Sleeves</td>
+                                    <td className="spec-val">{selectedProduct.blouseDetails.sleeves}</td>
+                                  </tr>
+                                )}
+                                {selectedProduct.blouseDetails.size && (
+                                  <tr>
+                                    <td className="spec-label">Size</td>
+                                    <td className="spec-val">{selectedProduct.blouseDetails.size}</td>
+                                  </tr>
+                                )}
+                                {selectedProduct.blouseDetails.work && (
+                                  <tr>
+                                    <td className="spec-label">Work / Art</td>
+                                    <td className="spec-val">{selectedProduct.blouseDetails.work}</td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+
+                        {/* Dupatta Details */}
+                        {activeSpecSubTab === 'dupatta' && selectedProduct.dupattaDetails && (
+                          <div className="spec-section-card">
+                            <h5 className="spec-section-title">🧣 Dupatta (Odhani) Details</h5>
+                            <table className="specs-table" style={{ marginBottom: 0 }}>
+                              <tbody>
+                                {selectedProduct.dupattaDetails.fabric && (
+                                  <tr>
+                                    <td className="spec-label">Fabric</td>
+                                    <td className="spec-val">{selectedProduct.dupattaDetails.fabric}</td>
+                                  </tr>
+                                )}
+                                {selectedProduct.dupattaDetails.color && (
+                                  <tr>
+                                    <td className="spec-label">Colour</td>
+                                    <td className="spec-val">{selectedProduct.dupattaDetails.color}</td>
+                                  </tr>
+                                )}
+                                {selectedProduct.dupattaDetails.length && (
+                                  <tr>
+                                    <td className="spec-label">Length</td>
+                                    <td className="spec-val">{selectedProduct.dupattaDetails.length}</td>
+                                  </tr>
+                                )}
+                                {selectedProduct.dupattaDetails.work && (
+                                  <tr>
+                                    <td className="spec-label">Work / Art</td>
+                                    <td className="spec-val">{selectedProduct.dupattaDetails.work}</td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                        {selectedProduct.weight && (
+                          <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '0.75rem 1rem',
+                            background: 'rgba(212, 175, 55, 0.08)',
+                            border: '1px solid rgba(212, 175, 55, 0.25)',
+                            borderRadius: '8px',
+                            marginTop: '1.2rem',
+                            fontFamily: 'var(--font-sans)',
+                            fontSize: '0.9rem'
+                          }}>
+                            <span style={{ fontWeight: 600, color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                              ⚖ Set Weight (Full Product)
+                            </span>
+                            <span style={{ fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                              {selectedProduct.weight}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {activeDetailTab === 'highlights' && (
+                      <div className="tab-pane-content">
+                        {selectedProduct.styleStatement && (
+                          <blockquote className="festive-quote">
+                            <p>{selectedProduct.styleStatement}</p>
+                            <cite>✨ Festive Style Statement</cite>
+                          </blockquote>
+                        )}
+
+                        {selectedProduct.highlights && selectedProduct.highlights.length > 0 && (
+                          <div className="highlights-section-card">
+                            <h5 className="spec-section-title">✨ Highlights</h5>
+                            <ul className="highlights-list">
+                              {selectedProduct.highlights.map((hl, index) => (
+                                <li key={index}>
+                                  <span className="check-icon">✔</span>
+                                  <span>{hl}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {activeDetailTab === 'care' && (
+                      <div className="tab-pane-content">
+                        {selectedProduct.careInstructions && selectedProduct.careInstructions.length > 0 && (
+                          <div className="care-section-card">
+                            <h5 className="spec-section-title">🧺 Care Instructions</h5>
+                            <ul className="care-list">
+                              {selectedProduct.careInstructions.map((care, index) => (
+                                <li key={index}>
+                                  <span className="bullet-icon">•</span>
+                                  <span>{care}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {selectedProduct.note && (
+                          <div className="note-section-card">
+                            <h5 className="spec-section-title">📌 Important Note</h5>
+                            <p className="note-text">{selectedProduct.note}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* Fallback to simple Specs Table for products without detailed fields */
+                  <table className="specs-table">
+                    <tbody>
+                      <tr>
+                        <td className="spec-label">Fabric / Material</td>
+                        <td className="spec-val">{selectedProduct.fabric}</td>
+                      </tr>
+                      <tr>
+                        <td className="spec-label">Embroidery & Work</td>
+                        <td className="spec-val">{selectedProduct.workType}</td>
+                      </tr>
+                      <tr>
+                        <td className="spec-label">Lehenga Ghera (Flare)</td>
+                        <td className="spec-val">{selectedProduct.flare}</td>
+                      </tr>
+                      <tr>
+                        <td className="spec-label">Blouse Style</td>
+                        <td className="spec-val">{selectedProduct.blouse}</td>
+                      </tr>
+                      <tr>
+                        <td className="spec-label">Dupatta Detail</td>
+                        <td className="spec-val">{selectedProduct.dupatta}</td>
+                      </tr>
+                      {selectedProduct.weight && (
+                        <tr>
+                          <td className="spec-label">Product Weight</td>
+                          <td className="spec-val">{selectedProduct.weight}</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                )}
 
 
 
-                <div style={{display: 'flex', gap: '1rem', marginTop: 'auto'}}>
+                 <div style={{display: 'flex', gap: '1rem', marginTop: 'auto'}}>
                   <button 
                     className="btn-inquire"
-                    style={{flexGrow: 2, padding: '1rem'}}
+                    style={{flexGrow: 2, padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'}}
                     id="modal-inquire-now-btn"
                     onClick={() => {
                       // Open inquiry
@@ -699,22 +959,28 @@ export default function CatalogPage() {
                       closeProductDetails();
                     }}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24" style={{marginRight: '4px'}}>
-                      <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" style={{flexShrink: 0}}>
+                      <rect width="24" height="24" rx="6" fill="#25D366" />
+                      <g transform="translate(4, 4)">
+                        <path fill="#FFFFFF" d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.907h.004c4.368 0 7.926-3.558 7.93-7.93a7.9 7.9 0 0 0-2.327-5.643zM11.75 11.517a2.23 2.23 0 0 1-1.07.513c-.273.069-.51.137-.8.02-.284-.117-.508-.228-1.002-.556-1.032-.687-1.782-1.758-2.222-2.47-.07-.113-.098-.2-.04-.27.054-.067.118-.148.18-.22.062-.072.079-.123.117-.205.037-.082.02-.153-.01-.225-.03-.072-.27-.655-.37-.899-.098-.238-.198-.205-.27-.205a8.3 8.3 0 0 0-.414-.008c-.146 0-.383.056-.583.275-.2.22-.765.748-.765 1.823s.783 2.115.892 2.262c.11.147 1.54 2.352 3.732 3.298.52.224.927.359 1.243.46.523.167.997.143 1.374.088.42-.062 1.777-.726 2.027-1.428.25-.701.25-1.303.175-1.428-.075-.126-.27-.197-.57-.346z"/>
+                      </g>
                     </svg>
                     Inquire on WhatsApp
                   </button>
                   
                   <button
                     className="btn-add-bag"
-                    style={{flexGrow: 1, padding: '1rem'}}
+                    style={{flexGrow: 1, padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'}}
                     id="modal-add-bag-btn"
                     onClick={(e) => {
                       handleAddToBag(selectedProduct, e);
                       closeProductDetails();
                     }}
                   >
-                    + Add to Bag
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+                    </svg>
+                    Add to Bag
                   </button>
                 </div>
               </div>
@@ -817,8 +1083,11 @@ export default function CatalogPage() {
                 className="btn-submit-inquiry"
                 id="submit-whatsapp-inquiry-btn"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                  <path fillRule="evenodd" d="M12.01 2.012a9.96 9.96 0 0 0-4.992 1.332L3 2.127l1.246 3.842a9.962 9.962 0 0 0-1.234 4.814c0 5.518 4.49 10.007 10.007 10.007 5.519 0 10.007-4.49 10.007-10.007s-4.488-10.007-10.007-10.007zm5.289 13.064c-.22.617-1.077 1.144-1.636 1.217-.552.072-1.282.115-2.029-.12-.472-.152-1.04-.388-1.782-.71-3.155-1.367-5.184-4.573-5.342-4.782-.158-.21-1.284-1.71-1.284-3.264 0-1.554.814-2.317 1.104-2.618.29-.3.633-.377.844-.377.21 0 .422.002.606.01.19.008.448-.073.7.538.264.64.9 2.19.979 2.352.079.162.132.35.026.562-.105.213-.158.347-.317.528-.158.18-.333.376-.475.526-.145.154-.296.322-.128.61.168.288.747 1.233 1.6 1.996.853.762 1.57 1.006 1.833 1.137.264.13.42.11.578-.073.158-.182.686-.798.87-1.073.185-.275.37-.23.623-.136.254.095 1.61.76 1.887.897.277.138.462.207.528.322.066.115.066.666-.154 1.283z" clipRule="evenodd"/>
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" style={{marginRight: '8px', flexShrink: 0}}>
+                  <rect width="24" height="24" rx="6" fill="#25D366" />
+                  <g transform="translate(4, 4)">
+                    <path fill="#FFFFFF" d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.907h.004c4.368 0 7.926-3.558 7.93-7.93a7.9 7.9 0 0 0-2.327-5.643zM11.75 11.517a2.23 2.23 0 0 1-1.07.513c-.273.069-.51.137-.8.02-.284-.117-.508-.228-1.002-.556-1.032-.687-1.782-1.758-2.222-2.47-.07-.113-.098-.2-.04-.27.054-.067.118-.148.18-.22.062-.072.079-.123.117-.205.037-.082.02-.153-.01-.225-.03-.072-.27-.655-.37-.899-.098-.238-.198-.205-.27-.205a8.3 8.3 0 0 0-.414-.008c-.146 0-.383.056-.583.275-.2.22-.765.748-.765 1.823s.783 2.115.892 2.262c.11.147 1.54 2.352 3.732 3.298.52.224.927.359 1.243.46.523.167.997.143 1.374.088.42-.062 1.777-.726 2.027-1.428.25-.701.25-1.303.175-1.428-.075-.126-.27-.197-.57-.346z"/>
+                  </g>
                 </svg>
                 Open WhatsApp & Chat
               </button>
@@ -911,12 +1180,15 @@ export default function CatalogPage() {
                 </div>
                 <button 
                   className="btn-submit-inquiry"
-                  style={{marginTop: '0.5rem'}}
+                  style={{marginTop: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'}}
                   id="bulk-inquiry-proceed-btn"
                   onClick={openBulkInquiry}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" style={{flexShrink: 0}}>
+                    <rect width="24" height="24" rx="6" fill="#25D366" />
+                    <g transform="translate(4, 4)">
+                      <path fill="#FFFFFF" d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.907h.004c4.368 0 7.926-3.558 7.93-7.93a7.9 7.9 0 0 0-2.327-5.643zM11.75 11.517a2.23 2.23 0 0 1-1.07.513c-.273.069-.51.137-.8.02-.284-.117-.508-.228-1.002-.556-1.032-.687-1.782-1.758-2.222-2.47-.07-.113-.098-.2-.04-.27.054-.067.118-.148.18-.22.062-.072.079-.123.117-.205.037-.082.02-.153-.01-.225-.03-.072-.27-.655-.37-.899-.098-.238-.198-.205-.27-.205a8.3 8.3 0 0 0-.414-.008c-.146 0-.383.056-.583.275-.2.22-.765.748-.765 1.823s.783 2.115.892 2.262c.11.147 1.54 2.352 3.732 3.298.52.224.927.359 1.243.46.523.167.997.143 1.374.088.42-.062 1.777-.726 2.027-1.428.25-.701.25-1.303.175-1.428-.075-.126-.27-.197-.57-.346z"/>
+                    </g>
                   </svg>
                   Inquire All via WhatsApp
                 </button>

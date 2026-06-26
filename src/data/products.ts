@@ -16,9 +16,94 @@ export interface Product {
   dupatta: string;
   isAvailable: boolean;
   tag?: string;
+  weight?: string;
+  // Detailed specifications (Optional)
+  lehengaDetails?: {
+    fabric?: string;
+    color?: string;
+    flair?: string;
+    waist?: string;
+    length?: string;
+    work?: string;
+  };
+  blouseDetails?: {
+    fabric?: string;
+    color?: string;
+    style?: string;
+    sleeves?: string;
+    size?: string;
+    work?: string;
+  };
+  dupattaDetails?: {
+    fabric?: string;
+    color?: string;
+    length?: string;
+    work?: string;
+  };
+  highlights?: string[];
+  careInstructions?: string[];
+  note?: string;
+  styleStatement?: string;
 }
 
 export const products: Product[] = [
+  {
+    id: "nh-04",
+    name: "Sunlit Elegance Designer Chaniya Choli Set (NH04)",
+    category: "chaniya-choli",
+    price: 3800,
+    originalPrice: 5999,
+    discount: 37,
+    image: "/images/NH04.png",
+    description: "Celebrate the vibrant spirit of Navratri with this graceful designer Chaniya Choli set, beautifully crafted in a stunning combination of Mustard Yellow, Ivory White, and Deep Mehendi Green. The rich embroidered dupatta paired with a contemporary color-block lehenga creates an elegant yet festive look, making it a perfect choice for Garba, Dandiya nights, festive celebrations, and wedding functions.",
+    fabric: "Premium Cotton Blend",
+    workType: "Designer Lace Border & Mirror Work",
+    flare: "Approx. 5.5 – 6.0 Meters",
+    blouse: "V-Neck Designer Blouse with Silver Embroidery",
+    dupatta: "Deep Mehendi Green bandhej with mirror work allover",
+    isAvailable: true,
+    tag: "Festive Pick",
+    lehengaDetails: {
+      fabric: "Premium Cotton Blend",
+      color: "Mustard Yellow & Ivory White",
+      flair: "Approx. 5.5 – 6.0 Meters",
+      waist: "Fits up to 40 inches",
+      length: "42 inches",
+      work: "Designer lace border with elegant finishing"
+    },
+    blouseDetails: {
+      fabric: "Premium Cotton Silk Blend",
+      color: "Mustard Yellow with Silver Embroidery",
+      style: "V-Neck Designer Blouse",
+      sleeves: "Half Sleeves",
+      size: "Stitched (Customizable as per availability)",
+      work: "Intricate embroidered neckline and sleeves"
+    },
+    dupattaDetails: {
+      fabric: "Premium Jacquard / Banarasi Weave",
+      color: "Deep Mehendi Green bandhej with mirror work allover",
+      length: "Approx. 2.3–2.5 Meters",
+      work: "Rich traditional woven motifs, intricate geometric patterns, and designer woven border with premium finish"
+    },
+    highlights: [
+      "Elegant festive colour combination",
+      "Comfortable and lightweight fabric",
+      "Premium embroidered blouse",
+      "Rich designer woven dupatta",
+      "Perfect for Navratri, Garba, Wedding Functions & Festive Occasions",
+      "Excellent fall and graceful silhouette"
+    ],
+    careInstructions: [
+      "Dry Clean Only",
+      "Do Not Machine Wash",
+      "Do Not Bleach",
+      "Steam or Low Heat Iron Recommended",
+      "Store in a cool, dry place",
+      "Keep away from direct sunlight for prolonged periods"
+    ],
+    note: "📌 The displayed image is AI-generated for presentation purposes. Actual product colours, embroidery patterns, lace, borders, and fabric shades may vary slightly due to lighting, photography, screen resolution, and manufacturing variations.",
+    styleStatement: "Step into every celebration with timeless elegance, vibrant colours, and the charm of traditional craftsmanship."
+  },
   {
     id: "nh-09",
     name: "Vibrant Guler Kathiawadi Chaniya Choli (NH09)",

@@ -36,6 +36,7 @@ export default function AdminPage() {
   const [itemBlouse, setItemBlouse] = useState('');
   const [itemDupatta, setItemDupatta] = useState('');
   const [itemTag, setItemTag] = useState('');
+  const [itemWeight, setItemWeight] = useState('');
   const [itemImage, setItemImage] = useState('/images/navratri.png'); // Default preset
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
@@ -46,6 +47,34 @@ export default function AdminPage() {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
   const [itemDescription, setItemDescription] = useState('');
+
+  // Form tab selection state
+  const [activeFormTab, setActiveFormTab] = useState<'basic' | 'lehenga' | 'blouse' | 'dupatta' | 'extra'>('basic');
+
+  // Detailed Specifications state variables
+  const [lehengaFabric, setLehengaFabric] = useState('');
+  const [lehengaColor, setLehengaColor] = useState('');
+  const [lehengaFlair, setLehengaFlair] = useState('');
+  const [lehengaWaist, setLehengaWaist] = useState('');
+  const [lehengaLength, setLehengaLength] = useState('');
+  const [lehengaWork, setLehengaWork] = useState('');
+
+  const [blouseFabric, setBlouseFabric] = useState('');
+  const [blouseColor, setBlouseColor] = useState('');
+  const [blouseStyle, setBlouseStyle] = useState('');
+  const [blouseSleeves, setBlouseSleeves] = useState('');
+  const [blouseSize, setBlouseSize] = useState('');
+  const [blouseWork, setBlouseWork] = useState('');
+
+  const [dupattaFabric, setDupattaFabric] = useState('');
+  const [dupattaColor, setDupattaColor] = useState('');
+  const [dupattaLength, setDupattaLength] = useState('');
+  const [dupattaWork, setDupattaWork] = useState('');
+
+  const [highlightsInput, setHighlightsInput] = useState('');
+  const [careInstructionsInput, setCareInstructionsInput] = useState('');
+  const [itemNote, setItemNote] = useState('');
+  const [itemStyleStatement, setItemStyleStatement] = useState('');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -161,6 +190,7 @@ export default function AdminPage() {
     setItemBlouse(product.blouse || '');
     setItemDupatta(product.dupatta || '');
     setItemTag(product.tag || '');
+    setItemWeight(product.weight || '');
     setItemImage(product.image);
     setItemImages(product.images || []);
     setItemVideo(product.video || '');
@@ -173,6 +203,33 @@ export default function AdminPage() {
     setVideoPreviewUrl(null);
     setFormMessage(null);
     setFormError(false);
+
+    // Populate Detailed Specifications
+    setLehengaFabric(product.lehengaDetails?.fabric || '');
+    setLehengaColor(product.lehengaDetails?.color || '');
+    setLehengaFlair(product.lehengaDetails?.flair || '');
+    setLehengaWaist(product.lehengaDetails?.waist || '');
+    setLehengaLength(product.lehengaDetails?.length || '');
+    setLehengaWork(product.lehengaDetails?.work || '');
+
+    setBlouseFabric(product.blouseDetails?.fabric || '');
+    setBlouseColor(product.blouseDetails?.color || '');
+    setBlouseStyle(product.blouseDetails?.style || '');
+    setBlouseSleeves(product.blouseDetails?.sleeves || '');
+    setBlouseSize(product.blouseDetails?.size || '');
+    setBlouseWork(product.blouseDetails?.work || '');
+
+    setDupattaFabric(product.dupattaDetails?.fabric || '');
+    setDupattaColor(product.dupattaDetails?.color || '');
+    setDupattaLength(product.dupattaDetails?.length || '');
+    setDupattaWork(product.dupattaDetails?.work || '');
+
+    setHighlightsInput(product.highlights ? product.highlights.join('\n') : '');
+    setCareInstructionsInput(product.careInstructions ? product.careInstructions.join('\n') : '');
+    setItemNote(product.note || '');
+    setItemStyleStatement(product.styleStatement || '');
+    
+    setActiveFormTab('basic');
 
     // Scroll to form smoothly
     const formElement = document.querySelector('.admin-form-panel');
@@ -194,6 +251,7 @@ export default function AdminPage() {
     setItemBlouse('');
     setItemDupatta('');
     setItemTag('');
+    setItemWeight('');
     setItemImage('/images/navratri.png');
     setItemImages([]);
     setItemVideo('');
@@ -206,6 +264,33 @@ export default function AdminPage() {
     setVideoPreviewUrl(null);
     setFormMessage(null);
     setFormError(false);
+
+    // Reset Detailed Specifications
+    setLehengaFabric('');
+    setLehengaColor('');
+    setLehengaFlair('');
+    setLehengaWaist('');
+    setLehengaLength('');
+    setLehengaWork('');
+
+    setBlouseFabric('');
+    setBlouseColor('');
+    setBlouseStyle('');
+    setBlouseSleeves('');
+    setBlouseSize('');
+    setBlouseWork('');
+
+    setDupattaFabric('');
+    setDupattaColor('');
+    setDupattaLength('');
+    setDupattaWork('');
+
+    setHighlightsInput('');
+    setCareInstructionsInput('');
+    setItemNote('');
+    setItemStyleStatement('');
+    
+    setActiveFormTab('basic');
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
@@ -269,6 +354,35 @@ export default function AdminPage() {
         uploadedVideoUrl = await uploadProductImage(videoFile);
       }
 
+      // Construct detailed spec fields only if they have entries
+      const lehengaDetailsObj = {
+        fabric: lehengaFabric.trim() || undefined,
+        color: lehengaColor.trim() || undefined,
+        flair: lehengaFlair.trim() || undefined,
+        waist: lehengaWaist.trim() || undefined,
+        length: lehengaLength.trim() || undefined,
+        work: lehengaWork.trim() || undefined,
+      };
+
+      const blouseDetailsObj = {
+        fabric: blouseFabric.trim() || undefined,
+        color: blouseColor.trim() || undefined,
+        style: blouseStyle.trim() || undefined,
+        sleeves: blouseSleeves.trim() || undefined,
+        size: blouseSize.trim() || undefined,
+        work: blouseWork.trim() || undefined,
+      };
+
+      const dupattaDetailsObj = {
+        fabric: dupattaFabric.trim() || undefined,
+        color: dupattaColor.trim() || undefined,
+        length: dupattaLength.trim() || undefined,
+        work: dupattaWork.trim() || undefined,
+      };
+
+      // Helper to check if any properties in object are defined
+      const hasAnyValue = (obj: any) => Object.values(obj).some(val => val !== undefined);
+
       const productPayload: Product = {
         id: itemId.trim().toLowerCase(),
         name: itemName.trim(),
@@ -286,7 +400,15 @@ export default function AdminPage() {
         blouse: itemBlouse.trim() || "Semi-stitched",
         dupatta: itemDupatta.trim() || "2.25 Meters",
         isAvailable: true,
-        tag: itemTag.trim() || undefined
+        tag: itemTag.trim() || undefined,
+        weight: itemWeight.trim() || undefined,
+        lehengaDetails: hasAnyValue(lehengaDetailsObj) ? lehengaDetailsObj : undefined,
+        blouseDetails: hasAnyValue(blouseDetailsObj) ? blouseDetailsObj : undefined,
+        dupattaDetails: hasAnyValue(dupattaDetailsObj) ? dupattaDetailsObj : undefined,
+        highlights: highlightsInput.trim() ? highlightsInput.split('\n').map(h => h.trim()).filter(Boolean) : undefined,
+        careInstructions: careInstructionsInput.trim() ? careInstructionsInput.split('\n').map(c => c.trim()).filter(Boolean) : undefined,
+        note: itemNote.trim() || undefined,
+        styleStatement: itemStyleStatement.trim() || undefined
       };
 
       if (isEditMode) {
@@ -327,6 +449,7 @@ export default function AdminPage() {
       setItemBlouse('');
       setItemDupatta('');
       setItemTag('');
+      setItemWeight('');
       setItemDescription('');
       setItemImage('/images/navratri.png');
       setItemImages([]);
@@ -337,6 +460,33 @@ export default function AdminPage() {
       setGalleryPreviewUrls([]);
       setVideoFile(null);
       setVideoPreviewUrl(null);
+
+      // Reset Detailed Specifications
+      setLehengaFabric('');
+      setLehengaColor('');
+      setLehengaFlair('');
+      setLehengaWaist('');
+      setLehengaLength('');
+      setLehengaWork('');
+
+      setBlouseFabric('');
+      setBlouseColor('');
+      setBlouseStyle('');
+      setBlouseSleeves('');
+      setBlouseSize('');
+      setBlouseWork('');
+
+      setDupattaFabric('');
+      setDupattaColor('');
+      setDupattaLength('');
+      setDupattaWork('');
+
+      setHighlightsInput('');
+      setCareInstructionsInput('');
+      setItemNote('');
+      setItemStyleStatement('');
+      
+      setActiveFormTab('basic');
 
       // Refresh listings
       fetchDashboardData();
@@ -482,341 +632,647 @@ export default function AdminPage() {
             )}
 
             <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '1rem' }}>
-                <div className="form-group">
-                  <label className="form-label">ID Code *</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="e.g. cc-007"
-                    value={itemId}
-                    onChange={(e) => setItemId(e.target.value)}
-                    disabled={isEditMode}
-                    required
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label className="form-label">Category *</label>
-                  <select
-                    className="form-select"
-                    value={itemCategory}
-                    onChange={(e) => setItemCategory(e.target.value as any)}
-                  >
-                    <option value="chaniya-choli">Chaniya Choli</option>
-                    <option value="home-decor">Home Decor</option>
-                    <option value="cushion-covers">Cushion Covers</option>
-                  </select>
-                </div>
+              {/* Form Section Tabs */}
+              <div className="admin-form-tabs">
+                <button
+                  type="button"
+                  className={`admin-tab-btn ${activeFormTab === 'basic' ? 'active' : ''}`}
+                  onClick={() => setActiveFormTab('basic')}
+                >
+                  General Info
+                </button>
+                <button
+                  type="button"
+                  className={`admin-tab-btn ${activeFormTab === 'lehenga' ? 'active' : ''}`}
+                  onClick={() => setActiveFormTab('lehenga')}
+                >
+                  Lehenga Spec
+                </button>
+                <button
+                  type="button"
+                  className={`admin-tab-btn ${activeFormTab === 'blouse' ? 'active' : ''}`}
+                  onClick={() => setActiveFormTab('blouse')}
+                >
+                  Blouse Spec
+                </button>
+                <button
+                  type="button"
+                  className={`admin-tab-btn ${activeFormTab === 'dupatta' ? 'active' : ''}`}
+                  onClick={() => setActiveFormTab('dupatta')}
+                >
+                  Dupatta Spec
+                </button>
+                <button
+                  type="button"
+                  className={`admin-tab-btn ${activeFormTab === 'extra' ? 'active' : ''}`}
+                  onClick={() => setActiveFormTab('extra')}
+                >
+                  Highlights & Extra
+                </button>
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Product Name *</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="e.g. Royal Emerald Patola Lehenga"
-                  value={itemName}
-                  onChange={(e) => setItemName(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div className="form-group">
-                  <label className="form-label">Selling Price (₹) *</label>
-                  <input
-                    type="number"
-                    className="form-input"
-                    placeholder="e.g. 7499"
-                    value={itemPrice}
-                    onChange={(e) => setItemPrice(e.target.value)}
-                    min="1"
-                    required
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label className="form-label">Original Price (₹) *</label>
-                  <input
-                    type="number"
-                    className="form-input"
-                    placeholder="e.g. 11999"
-                    value={itemOriginalPrice}
-                    onChange={(e) => setItemOriginalPrice(e.target.value)}
-                    min="1"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div className="form-group">
-                  <label className="form-label">Fabric / Material *</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="e.g. Pure Georgette"
-                    value={itemFabric}
-                    onChange={(e) => setItemFabric(e.target.value)}
-                    required
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label className="form-label">Embroidery / Work *</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="e.g. Real Mirror & Zari work"
-                    value={itemWorkType}
-                    onChange={(e) => setItemWorkType(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div className="form-group">
-                  <label className="form-label">Lehenga Ghera (Flare)</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="e.g. 6.5 Meters"
-                    value={itemFlare}
-                    onChange={(e) => setItemFlare(e.target.value)}
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label className="form-label">Blouse Fitting Details</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="e.g. Stitched Size 38-42"
-                    value={itemBlouse}
-                    onChange={(e) => setItemBlouse(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div className="form-group">
-                  <label className="form-label">Dupatta Detail</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="e.g. 2.3 Mtrs Organza"
-                    value={itemDupatta}
-                    onChange={(e) => setItemDupatta(e.target.value)}
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label className="form-label">Product Tag (Promo)</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="e.g. New Arrival"
-                    value={itemTag}
-                    onChange={(e) => setItemTag(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Upload Product Image</label>
-                <input
-                  type="file"
-                  className="form-input"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  style={{ display: 'block', padding: '0.5rem' }}
-                />
-                
-                {imagePreviewUrl ? (
-                  <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ width: '60px', height: '60px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--color-border-gold)', position: 'relative' }}>
-                      <img src={imagePreviewUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              {activeFormTab === 'basic' && (
+                <>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">ID Code *</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. cc-007"
+                        value={itemId}
+                        onChange={(e) => setItemId(e.target.value)}
+                        disabled={isEditMode}
+                        required
+                      />
                     </div>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Photo loaded successfully</span>
+                    
+                    <div className="form-group">
+                      <label className="form-label">Category *</label>
+                      <select
+                        className="form-select"
+                        value={itemCategory}
+                        onChange={(e) => setItemCategory(e.target.value as any)}
+                      >
+                        <option value="chaniya-choli">Chaniya Choli</option>
+                        <option value="home-decor">Home Decor</option>
+                        <option value="cushion-covers">Cushion Covers</option>
+                      </select>
+                    </div>
                   </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
-                    <label className="form-label" style={{ fontSize: '0.75rem' }}>Or Select Preset Backup Graphic</label>
-                    <select
-                      className="form-select"
-                      value={itemImage}
-                      onChange={(e) => setItemImage(e.target.value)}
-                    >
-                      <option value="/images/navratri.png">Chaniya Choli preset 1 (Vibrant model)</option>
-                      <option value="/images/bridal.png">Chaniya Choli preset 2 (Red Silk model)</option>
-                      <option value="/images/pastel.png">Chaniya Choli preset 3 (Pastel model)</option>
-                      <option value="/images/home_decor.png">Home Decor preset</option>
-                      <option value="/images/cushion_cover.png">Cushion Cover preset</option>
-                    </select>
-                  </div>
-                )}
-              </div>
 
-              <div className="form-group">
-                <label className="form-label">Upload Gallery Images (Inner View Card Images)</label>
-                <input
-                  type="file"
-                  className="form-input"
-                  accept="image/*"
-                  multiple
-                  onChange={handleGalleryChange}
-                  style={{ display: 'block', padding: '0.5rem' }}
-                />
-                {galleryPreviewUrls.length > 0 ? (
-                  <div>
-                    <label className="form-label" style={{ fontSize: '0.75rem', marginTop: '0.5rem' }}>Newly Selected Gallery Images ({galleryPreviewUrls.length})</label>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem', marginTop: '0.2rem' }}>
-                      {galleryPreviewUrls.map((url, idx) => (
-                        <div key={idx} style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '8px', border: '1px solid var(--color-border-gold)' }}>
-                          <img src={url} alt={`Gallery preview ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
+                  <div className="form-group">
+                    <label className="form-label">Product Name *</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="e.g. Royal Emerald Patola Lehenga"
+                      value={itemName}
+                      onChange={(e) => setItemName(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">Selling Price (₹) *</label>
+                      <input
+                        type="number"
+                        className="form-input"
+                        placeholder="e.g. 7499"
+                        value={itemPrice}
+                        onChange={(e) => setItemPrice(e.target.value)}
+                        min="1"
+                        required
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label className="form-label">Original Price (₹) *</label>
+                      <input
+                        type="number"
+                        className="form-input"
+                        placeholder="e.g. 11999"
+                        value={itemOriginalPrice}
+                        onChange={(e) => setItemOriginalPrice(e.target.value)}
+                        min="1"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">Fabric / Material *</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Pure Georgette"
+                        value={itemFabric}
+                        onChange={(e) => setItemFabric(e.target.value)}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label className="form-label">Embroidery / Work *</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Real Mirror & Zari work"
+                        value={itemWorkType}
+                        onChange={(e) => setItemWorkType(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">Lehenga Ghera (Summary Flare)</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. 6.5 Meters"
+                        value={itemFlare}
+                        onChange={(e) => setItemFlare(e.target.value)}
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label className="form-label">Blouse Fitting (Summary Details)</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Stitched Size 38-42"
+                        value={itemBlouse}
+                        onChange={(e) => setItemBlouse(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">Dupatta Detail (Summary)</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. 2.3 Mtrs Organza"
+                        value={itemDupatta}
+                        onChange={(e) => setItemDupatta(e.target.value)}
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label className="form-label">Product Tag (Promo)</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. New Arrival"
+                        value={itemTag}
+                        onChange={(e) => setItemTag(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Total Weight</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Approx. 2.0 kg"
+                        value={itemWeight}
+                        onChange={(e) => setItemWeight(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Upload Product Image</label>
+                    <input
+                      type="file"
+                      className="form-input"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      style={{ display: 'block', padding: '0.5rem' }}
+                    />
+                    
+                    {imagePreviewUrl ? (
+                      <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div style={{ width: '60px', height: '60px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--color-border-gold)', position: 'relative' }}>
+                          <img src={imagePreviewUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Photo loaded successfully</span>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+                        <label className="form-label" style={{ fontSize: '0.75rem' }}>Or Select Preset Backup Graphic</label>
+                        <select
+                          className="form-select"
+                          value={itemImage}
+                          onChange={(e) => setItemImage(e.target.value)}
+                        >
+                          <option value="/images/navratri.png">Chaniya Choli preset 1 (Vibrant model)</option>
+                          <option value="/images/bridal.png">Chaniya Choli preset 2 (Red Silk model)</option>
+                          <option value="/images/pastel.png">Chaniya Choli preset 3 (Pastel model)</option>
+                          <option value="/images/home_decor.png">Home Decor preset</option>
+                          <option value="/images/cushion_cover.png">Cushion Cover preset</option>
+                        </select>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Upload Gallery Images (Inner View Card Images)</label>
+                    <input
+                      type="file"
+                      className="form-input"
+                      accept="image/*"
+                      multiple
+                      onChange={handleGalleryChange}
+                      style={{ display: 'block', padding: '0.5rem' }}
+                    />
+                    {galleryPreviewUrls.length > 0 ? (
+                      <div>
+                        <label className="form-label" style={{ fontSize: '0.75rem', marginTop: '0.5rem' }}>Newly Selected Gallery Images ({galleryPreviewUrls.length})</label>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem', marginTop: '0.2rem' }}>
+                          {galleryPreviewUrls.map((url, idx) => (
+                            <div key={idx} style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '8px', border: '1px solid var(--color-border-gold)' }}>
+                              <img src={url} alt={`Gallery preview ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setGalleryFiles(prev => prev.filter((_, i) => i !== idx));
+                                  setGalleryPreviewUrls(prev => prev.filter((_, i) => i !== idx));
+                                }}
+                                style={{
+                                  position: 'absolute',
+                                  top: '-6px',
+                                  right: '-6px',
+                                  width: '18px',
+                                  height: '18px',
+                                  borderRadius: '50%',
+                                  background: '#e74c3c',
+                                  color: 'white',
+                                  border: 'none',
+                                  fontSize: '12px',
+                                  fontWeight: 'bold',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                }}
+                                title="Remove Selected Image"
+                              >
+                                &times;
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {itemImages.length > 0 ? (
+                      <div style={{ marginTop: '0.8rem' }}>
+                        <label className="form-label" style={{ fontSize: '0.75rem' }}>Saved Gallery Images ({itemImages.length})</label>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem', marginTop: '0.2rem' }}>
+                          {itemImages.map((url, idx) => (
+                            <div key={idx} style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '8px', border: '1px solid var(--color-border-gold)' }}>
+                              <img src={url} alt={`Current gallery ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
+                              <button
+                                type="button"
+                                onClick={() => setItemImages(prev => prev.filter((_, i) => i !== idx))}
+                                style={{
+                                  position: 'absolute',
+                                  top: '-6px',
+                                  right: '-6px',
+                                  width: '18px',
+                                  height: '18px',
+                                  borderRadius: '50%',
+                                  background: '#e74c3c',
+                                  color: 'white',
+                                  border: 'none',
+                                  fontSize: '12px',
+                                  fontWeight: 'bold',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                }}
+                                title="Delete Saved Image"
+                              >
+                                &times;
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Upload Product Video (Optional Showcase)</label>
+                    <input
+                      type="file"
+                      className="form-input"
+                      accept="video/*"
+                      onChange={handleVideoChange}
+                      style={{ display: 'block', padding: '0.5rem' }}
+                    />
+                    {videoPreviewUrl ? (
+                      <div style={{ marginTop: '0.5rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
+                          <label className="form-label" style={{ fontSize: '0.75rem', marginBottom: 0 }}>New Showcase Video Preview</label>
                           <button
                             type="button"
                             onClick={() => {
-                              setGalleryFiles(prev => prev.filter((_, i) => i !== idx));
-                              setGalleryPreviewUrls(prev => prev.filter((_, i) => i !== idx));
+                              setVideoFile(null);
+                              setVideoPreviewUrl(null);
                             }}
                             style={{
-                              position: 'absolute',
-                              top: '-6px',
-                              right: '-6px',
-                              width: '18px',
-                              height: '18px',
-                              borderRadius: '50%',
-                              background: '#e74c3c',
-                              color: 'white',
+                              background: 'transparent',
                               border: 'none',
-                              fontSize: '12px',
+                              color: '#e74c3c',
+                              fontSize: '0.75rem',
                               fontWeight: 'bold',
                               cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                              padding: 0
                             }}
-                            title="Remove Selected Image"
                           >
-                            &times;
+                            Remove Selected Video
                           </button>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-
-                {itemImages.length > 0 ? (
-                  <div style={{ marginTop: '0.8rem' }}>
-                    <label className="form-label" style={{ fontSize: '0.75rem' }}>Saved Gallery Images ({itemImages.length})</label>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem', marginTop: '0.2rem' }}>
-                      {itemImages.map((url, idx) => (
-                        <div key={idx} style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '8px', border: '1px solid var(--color-border-gold)' }}>
-                          <img src={url} alt={`Current gallery ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
+                        <video src={videoPreviewUrl} controls style={{ width: '100%', maxHeight: '150px', borderRadius: '8px', border: '1px solid var(--color-border-gold)' }} />
+                      </div>
+                    ) : itemVideo ? (
+                      <div style={{ marginTop: '0.5rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
+                          <label className="form-label" style={{ fontSize: '0.75rem', marginBottom: 0 }}>Saved Product Video</label>
                           <button
                             type="button"
-                            onClick={() => setItemImages(prev => prev.filter((_, i) => i !== idx))}
+                            onClick={() => setItemVideo('')}
                             style={{
-                              position: 'absolute',
-                              top: '-6px',
-                              right: '-6px',
-                              width: '18px',
-                              height: '18px',
-                              borderRadius: '50%',
-                              background: '#e74c3c',
-                              color: 'white',
+                              background: 'transparent',
                               border: 'none',
-                              fontSize: '12px',
+                              color: '#e74c3c',
+                              fontSize: '0.75rem',
                               fontWeight: 'bold',
                               cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                              padding: 0
                             }}
-                            title="Delete Saved Image"
                           >
-                            &times;
+                            Remove Video
                           </button>
                         </div>
-                      ))}
-                    </div>
+                        <video src={itemVideo} controls style={{ width: '100%', maxHeight: '150px', borderRadius: '8px', border: '1px solid var(--color-border-gold)' }} />
+                      </div>
+                    ) : null}
                   </div>
-                ) : null}
-              </div>
 
-              <div className="form-group">
-                <label className="form-label">Upload Product Video (Optional Showcase)</label>
-                <input
-                  type="file"
-                  className="form-input"
-                  accept="video/*"
-                  onChange={handleVideoChange}
-                  style={{ display: 'block', padding: '0.5rem' }}
-                />
-                {videoPreviewUrl ? (
-                  <div style={{ marginTop: '0.5rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
-                      <label className="form-label" style={{ fontSize: '0.75rem', marginBottom: 0 }}>New Showcase Video Preview</label>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setVideoFile(null);
-                          setVideoPreviewUrl(null);
-                        }}
-                        style={{
-                          background: 'transparent',
-                          border: 'none',
-                          color: '#e74c3c',
-                          fontSize: '0.75rem',
-                          fontWeight: 'bold',
-                          cursor: 'pointer',
-                          padding: 0
-                        }}
-                      >
-                        Remove Selected Video
-                      </button>
-                    </div>
-                    <video src={videoPreviewUrl} controls style={{ width: '100%', maxHeight: '150px', borderRadius: '8px', border: '1px solid var(--color-border-gold)' }} />
+                  <div className="form-group">
+                    <label className="form-label">Product Description</label>
+                    <textarea
+                      className="form-input form-textarea"
+                      placeholder="Provide a stunning narrative description of the Chaniya Choli..."
+                      value={itemDescription}
+                      onChange={(e) => setItemDescription(e.target.value)}
+                    />
                   </div>
-                ) : itemVideo ? (
-                  <div style={{ marginTop: '0.5rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
-                      <label className="form-label" style={{ fontSize: '0.75rem', marginBottom: 0 }}>Saved Product Video</label>
-                      <button
-                        type="button"
-                        onClick={() => setItemVideo('')}
-                        style={{
-                          background: 'transparent',
-                          border: 'none',
-                          color: '#e74c3c',
-                          fontSize: '0.75rem',
-                          fontWeight: 'bold',
-                          cursor: 'pointer',
-                          padding: 0
-                        }}
-                      >
-                        Remove Video
-                      </button>
-                    </div>
-                    <video src={itemVideo} controls style={{ width: '100%', maxHeight: '150px', borderRadius: '8px', border: '1px solid var(--color-border-gold)' }} />
-                  </div>
-                ) : null}
-              </div>
+                </>
+              )}
 
-              <div className="form-group">
-                <label className="form-label">Product Description</label>
-                <textarea
-                  className="form-input form-textarea"
-                  placeholder="Provide a stunning narrative description of the Chaniya Choli..."
-                  value={itemDescription}
-                  onChange={(e) => setItemDescription(e.target.value)}
-                />
-              </div>
+              {activeFormTab === 'lehenga' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                  <h3 style={{ fontSize: '1.1rem', color: 'var(--color-gold-bright)', borderBottom: '1px solid rgba(212,175,55,0.2)', paddingBottom: '0.4rem', marginBottom: '0.4rem' }}>Lehenga Specifications</h3>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">Lehenga Fabric</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Premium Cotton Blend"
+                        value={lehengaFabric}
+                        onChange={(e) => setLehengaFabric(e.target.value)}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Lehenga Color</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Mustard Yellow & Ivory White"
+                        value={lehengaColor}
+                        onChange={(e) => setLehengaColor(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">Lehenga Ghera (Flair)</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Approx. 5.5 – 6.0 Meters"
+                        value={lehengaFlair}
+                        onChange={(e) => setLehengaFlair(e.target.value)}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Lehenga Waist Size</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Fits up to 40 inches"
+                        value={lehengaWaist}
+                        onChange={(e) => setLehengaWaist(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">Lehenga Length</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. 42 inches"
+                        value={lehengaLength}
+                        onChange={(e) => setLehengaLength(e.target.value)}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Lehenga Work / Finish</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Designer lace border with elegant finishing"
+                        value={lehengaWork}
+                        onChange={(e) => setLehengaWork(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeFormTab === 'blouse' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                  <h3 style={{ fontSize: '1.1rem', color: 'var(--color-gold-bright)', borderBottom: '1px solid rgba(212,175,55,0.2)', paddingBottom: '0.4rem', marginBottom: '0.4rem' }}>Blouse Specifications</h3>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">Blouse Fabric</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Premium Cotton Silk Blend"
+                        value={blouseFabric}
+                        onChange={(e) => setBlouseFabric(e.target.value)}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Blouse Color</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Mustard Yellow with Silver Embroidery"
+                        value={blouseColor}
+                        onChange={(e) => setBlouseColor(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">Blouse Style / Neckline</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. V-Neck Designer Blouse"
+                        value={blouseStyle}
+                        onChange={(e) => setBlouseStyle(e.target.value)}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Blouse Sleeves</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Half Sleeves"
+                        value={blouseSleeves}
+                        onChange={(e) => setBlouseSleeves(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">Blouse Size / Stitch Type</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Stitched Size 38-42"
+                        value={blouseSize}
+                        onChange={(e) => setBlouseSize(e.target.value)}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Blouse Work / Details</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Intricate embroidered neckline and sleeves"
+                        value={blouseWork}
+                        onChange={(e) => setBlouseWork(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeFormTab === 'dupatta' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                  <h3 style={{ fontSize: '1.1rem', color: 'var(--color-gold-bright)', borderBottom: '1px solid rgba(212,175,55,0.2)', paddingBottom: '0.4rem', marginBottom: '0.4rem' }}>Dupatta Specifications</h3>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">Dupatta Fabric</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Premium Jacquard / Banarasi Weave"
+                        value={dupattaFabric}
+                        onChange={(e) => setDupattaFabric(e.target.value)}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Dupatta Color</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Deep Mehendi Green"
+                        value={dupattaColor}
+                        onChange={(e) => setDupattaColor(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">Dupatta Length</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Approx. 2.3–2.5 Meters"
+                        value={dupattaLength}
+                        onChange={(e) => setDupattaLength(e.target.value)}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Dupatta Work Details</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Rich traditional woven motifs & designer border"
+                        value={dupattaWork}
+                        onChange={(e) => setDupattaWork(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeFormTab === 'extra' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                  <h3 style={{ fontSize: '1.1rem', color: 'var(--color-gold-bright)', borderBottom: '1px solid rgba(212,175,55,0.2)', paddingBottom: '0.4rem', marginBottom: '0.4rem' }}>Highlights, Care & Notes</h3>
+                  
+                  <div className="form-group">
+                    <label className="form-label">Product Highlights (One item per line)</label>
+                    <textarea
+                      className="form-input form-textarea"
+                      style={{ height: '80px' }}
+                      placeholder="e.g.&#10;Elegant festive color combination&#10;Comfortable premium cotton&#10;Stunning designer dupatta"
+                      value={highlightsInput}
+                      onChange={(e) => setHighlightsInput(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Care Instructions (One instruction per line)</label>
+                    <textarea
+                      className="form-input form-textarea"
+                      style={{ height: '80px' }}
+                      placeholder="e.g.&#10;Dry Clean Only&#10;Steam or low heat iron recommended&#10;Store in a cool dry place"
+                      value={careInstructionsInput}
+                      onChange={(e) => setCareInstructionsInput(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Stylist Statement / Quote</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="e.g. Step into every celebration with timeless elegance."
+                      value={itemStyleStatement}
+                      onChange={(e) => setItemStyleStatement(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Important Note / Disclaimer</label>
+                    <textarea
+                      className="form-input form-textarea"
+                      style={{ height: '60px' }}
+                      placeholder="e.g. The displayed image is for presentation purposes. Actual colors may vary slightly."
+                      value={itemNote}
+                      onChange={(e) => setItemNote(e.target.value)}
+                    />
+                  </div>
+                </div>
+              )}
 
               <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
                 <button 
