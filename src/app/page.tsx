@@ -254,12 +254,29 @@ export default function CatalogPage() {
 
   // --- Filtering Logic ---
   const filteredProducts = useMemo(() => {
-    return productsList.filter(product => {
+    const categoryPriority: Record<string, number> = {
+      'chaniya-choli': 1,
+      'home-decor': 2,
+      'cushion-covers': 3,
+    };
+
+    const list = productsList.filter(product => {
       const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
       const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             product.workType.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             product.fabric.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
+    });
+
+    return [...list].sort((a, b) => {
+      const priorityA = categoryPriority[a.category] || 99;
+      const priorityB = categoryPriority[b.category] || 99;
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+      }
+      const timeA = new Date(a.created_at || 0).getTime();
+      const timeB = new Date(b.created_at || 0).getTime();
+      return timeB - timeA;
     });
   }, [productsList, selectedCategory, searchQuery]);
 
