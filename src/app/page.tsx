@@ -291,7 +291,7 @@ export default function CatalogPage() {
 
           <div className="nav-actions">
             {/* User Profile / Auth links */}
-            {user ? (
+            {user && (
               <div className="user-nav-profile" style={{ marginRight: '1rem' }}>
                 {userProfile?.role === 'admin' && (
                   <a 
@@ -305,14 +305,6 @@ export default function CatalogPage() {
                 <span className="user-nav-email" style={{ fontSize: '0.85rem' }} title={user.email}>{user.email}</span>
                 <button className="btn-signout" onClick={handleSignOut}>Sign Out</button>
               </div>
-            ) : (
-              <a 
-                href="/auth" 
-                className="btn-details" 
-                style={{ textDecoration: 'none', marginRight: '1rem', padding: '0.5rem 1rem', fontSize: '0.85rem', border: '1px solid var(--color-border-gold)', color: 'var(--color-gold-bright)' }}
-              >
-                Sign In
-              </a>
             )}
 
             <button 
