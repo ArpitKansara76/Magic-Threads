@@ -135,7 +135,7 @@ export const mockSupabase = {
                   ).filter(Boolean) as Product[];
 
                   // Apply Sorting
-                  if (queryBuilder._sortField === 'created_at' && table === 'products') {
+                  if (queryBuilder._sortField === 'created_at') {
                     matchedProducts.sort((a, b) => {
                       const timeA = new Date(a.created_at || 0).getTime();
                       const timeB = new Date(b.created_at || 0).getTime();
