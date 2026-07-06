@@ -2235,5 +2235,120 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* Mobile Overrides for Specs Details Modal */
+@media (max-width: 768px) {
+  .modal-window {
+    max-height: 92vh !important;
+    border-radius: 16px !important;
+    margin: 0.5rem auto !important;
+    width: 95% !important;
+  }
+  
+  .modal-content-details {
+    padding: 1.25rem !important;
+    gap: 1.25rem !important;
+  }
+
+  .modal-close-btn {
+    top: 0.75rem !important;
+    right: 0.75rem !important;
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 1.1rem !important;
+    background: rgba(44, 29, 26, 0.85) !important;
+    color: #ffffff !important;
+    border: 1px solid var(--color-border-gold) !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  .modal-main-image-wrapper {
+    max-height: 200px !important;
+    aspect-ratio: auto !important;
+    background: transparent !important;
+    border: none !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  .modal-main-image,
+  .modal-main-video {
+    object-fit: contain !important;
+    max-height: 200px !important;
+    width: auto !important;
+    margin: 0 auto !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    background: transparent !important;
+  }
+
+  .modal-thumbnails {
+    margin-top: 0.15rem !important;
+    padding-bottom: 0px !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  .modal-thumbnails::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .thumbnail-item {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 6px !important;
+  }
+
+  .modal-title {
+    font-size: 1.35rem !important;
+    line-height: 1.3 !important;
+    margin-bottom: 0.25rem !important;
+  }
+
+  .modal-price-row {
+    margin-bottom: 0.75rem !important;
+    gap: 0.75rem !important;
+  }
+
+  .modal-price-row .product-price {
+    font-size: 1.5rem !important;
+  }
+
+  .modal-price-row .product-original-price {
+    font-size: 1.1rem !important;
+  }
+
+  .modal-price-row .product-discount {
+    font-size: 0.95rem !important;
+  }
+
+  .modal-desc {
+    font-size: 0.85rem !important;
+    line-height: 1.5 !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .product-details-tabs {
+    margin-bottom: 1rem !important;
+    gap: 0.25rem !important;
+  }
+
+  .details-tab-btn {
+    padding: 0.4rem 0.6rem !important;
+    font-size: 0.78rem !important;
+  }
+
+  .specs-table {
+    margin-bottom: 1rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  .specs-table td {
+    padding: 0.45rem 0.2rem !important;
+  }
+}
+
 
 
