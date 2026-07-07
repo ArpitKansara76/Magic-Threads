@@ -6,7 +6,7 @@ import { products as initialProducts, Product } from '../data/products';
 import { supabase } from '../utils/supabase/client';
 
 // Configurable seller phone number (with country code, e.g., +91 for India)
-const SELLER_WHATSAPP_NUMBER = '919876543210';
+const SELLER_WHATSAPP_NUMBER = '918980082662';
 
 const formatCategory = (cat: string) => {
   if (cat === 'chaniya-choli') return 'Chaniya Choli';
@@ -1183,7 +1183,7 @@ export default function CatalogPage() {
                   type="tel"
                   id="inquiry-user-phone"
                   className="form-input"
-                  placeholder="e.g. +91 8980082662"
+                  placeholder="e.g. +91 98765 43210"
                   value={userPhone}
                   onChange={(e) => setUserPhone(e.target.value)}
                 />

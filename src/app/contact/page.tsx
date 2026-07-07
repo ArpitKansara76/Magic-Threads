@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 
-const SELLER_WHATSAPP_NUMBER = '919876543210';
+const SELLER_WHATSAPP_NUMBER = '918980082662';
 
 export default function ContactPage() {
   const [name, setName] = useState('');
