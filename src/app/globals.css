@@ -666,9 +666,9 @@ h1, h2, h3, h4, h5, h6 {
   width: 100%;
   max-width: 900px;
   position: relative;
-  overflow: hidden;
-  max-height: 90vh; /* Keeps modal frame within screen bounds */
-  margin: auto; /* Vertically centers if smaller, aligns nicely if larger */
+  overflow: hidden;              /* clips children — no x-scroll on modal */
+  max-height: 90vh;
+  margin: auto;
   display: flex;
   flex-direction: column;
   animation: modalSlideIn 0.3s ease-out forwards;
@@ -719,8 +719,10 @@ h1, h2, h3, h4, h5, h6 {
   grid-template-columns: 1fr;
   gap: 2rem;
   padding: 2.5rem;
-  overflow-y: auto; /* Enable vertical scroll inside the modal content */
+  overflow-y: auto;    /* scroll content vertically */
+  overflow-x: hidden;  /* never let children cause horizontal scroll */
   flex-grow: 1;
+  min-width: 0;        /* prevent grid blowout */
 }
 
 @media (min-width: 768px) {
@@ -733,6 +735,8 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  min-width: 0;     /* allow flex child to shrink — prevents overflow */
+  overflow: hidden; /* contain thumbnails */
 }
 
 .modal-main-image-wrapper {
@@ -753,6 +757,10 @@ h1, h2, h3, h4, h5, h6 {
 .modal-info-panel {
   display: flex;
   flex-direction: column;
+  min-width: 0;      /* allow flex child to shrink — prevents text overflow */
+  overflow-x: hidden;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .modal-title-row {
@@ -785,6 +793,7 @@ h1, h2, h3, h4, h5, h6 {
   border-collapse: collapse;
   margin-bottom: 2rem;
   font-size: 0.9rem;
+  table-layout: fixed; /* fixed columns — text wraps, no overflow */
 }
 
 .specs-table tr {
@@ -793,17 +802,20 @@ h1, h2, h3, h4, h5, h6 {
 
 .specs-table td {
   padding: 0.65rem 0.5rem;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .specs-table td.spec-label {
   color: var(--color-text-muted);
   font-weight: 500;
-  width: 40%;
+  width: 38%;
 }
 
 .specs-table td.spec-val {
   color: var(--color-text-primary);
   font-weight: 600;
+  width: 62%;
 }
 
 /* Size Selector */
@@ -1659,12 +1671,18 @@ h1, h2, h3, h4, h5, h6 {
 /* Media Gallery & Video Showcase Styles */
 .modal-thumbnails {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;       /* keep all thumbs on one line */
   gap: 0.5rem;
-  overflow-x: auto;
+  width: 100%;             /* never wider than parent */
+  box-sizing: border-box;
+  overflow-x: auto;        /* scroll ONLY this strip */
+  overflow-y: hidden;
   padding-bottom: 0.5rem;
   scrollbar-width: thin;
   scrollbar-color: var(--color-gold) transparent;
   margin-top: 0.5rem;
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal-thumbnails::-webkit-scrollbar {
@@ -2242,11 +2260,19 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 16px !important;
     margin: 0.5rem auto !important;
     width: 95% !important;
+    overflow: hidden !important; /* no horizontal scroll on the popup */
   }
   
   .modal-content-details {
     padding: 1.25rem !important;
     gap: 1.25rem !important;
+    overflow-x: hidden !important; /* contain children horizontally */
+    min-width: 0 !important;
+  }
+
+  .modal-image-panel {
+    min-width: 0 !important;
+    overflow: hidden !important;
   }
 
   .modal-close-btn {
@@ -2284,9 +2310,15 @@ h1, h2, h3, h4, h5, h6 {
     background: transparent !important;
   }
 
+  /* thumbnail strip: scroll ONLY here, not the whole modal */
   .modal-thumbnails {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
     margin-top: 0.15rem !important;
-    padding-bottom: 0px !important;
+    padding-bottom: 4px !important;
     scrollbar-width: none !important;
     -ms-overflow-style: none !important;
   }
@@ -2296,8 +2328,9 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .thumbnail-item {
-    width: 40px !important;
-    height: 40px !important;
+    width: 44px !important;
+    height: 44px !important;
+    flex-shrink: 0 !important;
     border-radius: 6px !important;
   }
 
