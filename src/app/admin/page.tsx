@@ -58,6 +58,8 @@ export default function AdminPage() {
   const [lehengaWaist, setLehengaWaist] = useState('');
   const [lehengaLength, setLehengaLength] = useState('');
   const [lehengaWork, setLehengaWork] = useState('');
+  const [lehengaInner, setLehengaInner] = useState('');
+  const [lehengaClosure, setLehengaClosure] = useState('');
 
   const [blouseFabric, setBlouseFabric] = useState('');
   const [blouseColor, setBlouseColor] = useState('');
@@ -65,14 +67,20 @@ export default function AdminPage() {
   const [blouseSleeves, setBlouseSleeves] = useState('');
   const [blouseSize, setBlouseSize] = useState('');
   const [blouseWork, setBlouseWork] = useState('');
+  const [blouseNote, setBlouseNote] = useState('');
 
   const [dupattaFabric, setDupattaFabric] = useState('');
   const [dupattaColor, setDupattaColor] = useState('');
   const [dupattaLength, setDupattaLength] = useState('');
   const [dupattaWork, setDupattaWork] = useState('');
+  const [dupattaWidth, setDupattaWidth] = useState('');
+  const [dupattaBorder, setDupattaBorder] = useState('');
+  const [dupattaDrapeNote, setDupattaDrapeNote] = useState('');
 
   const [highlightsInput, setHighlightsInput] = useState('');
   const [careInstructionsInput, setCareInstructionsInput] = useState('');
+  const [packageContentsInput, setPackageContentsInput] = useState('');
+  const [suitableForInput, setSuitableForInput] = useState('');
   const [itemNote, setItemNote] = useState('');
   const [itemStyleStatement, setItemStyleStatement] = useState('');
 
@@ -212,6 +220,8 @@ export default function AdminPage() {
     setLehengaWaist(product.lehengaDetails?.waist || '');
     setLehengaLength(product.lehengaDetails?.length || '');
     setLehengaWork(product.lehengaDetails?.work || '');
+    setLehengaInner(product.lehengaDetails?.inner || '');
+    setLehengaClosure(product.lehengaDetails?.closure || '');
 
     setBlouseFabric(product.blouseDetails?.fabric || '');
     setBlouseColor(product.blouseDetails?.color || '');
@@ -219,14 +229,20 @@ export default function AdminPage() {
     setBlouseSleeves(product.blouseDetails?.sleeves || '');
     setBlouseSize(product.blouseDetails?.size || '');
     setBlouseWork(product.blouseDetails?.work || '');
+    setBlouseNote(product.blouseDetails?.note || '');
 
     setDupattaFabric(product.dupattaDetails?.fabric || '');
     setDupattaColor(product.dupattaDetails?.color || '');
     setDupattaLength(product.dupattaDetails?.length || '');
     setDupattaWork(product.dupattaDetails?.work || '');
+    setDupattaWidth(product.dupattaDetails?.width || '');
+    setDupattaBorder(product.dupattaDetails?.border || '');
+    setDupattaDrapeNote(product.dupattaDetails?.drapeNote || '');
 
     setHighlightsInput(product.highlights ? product.highlights.join('\n') : '');
     setCareInstructionsInput(product.careInstructions ? product.careInstructions.join('\n') : '');
+    setPackageContentsInput(product.packageContents ? product.packageContents.join('\n') : '');
+    setSuitableForInput(product.suitableFor ? product.suitableFor.join('\n') : '');
     setItemNote(product.note || '');
     setItemStyleStatement(product.styleStatement || '');
     
@@ -288,6 +304,8 @@ export default function AdminPage() {
 
     setHighlightsInput('');
     setCareInstructionsInput('');
+    setPackageContentsInput('');
+    setSuitableForInput('');
     setItemNote('');
     setItemStyleStatement('');
     
@@ -363,6 +381,8 @@ export default function AdminPage() {
         waist: lehengaWaist.trim() || undefined,
         length: lehengaLength.trim() || undefined,
         work: lehengaWork.trim() || undefined,
+        inner: lehengaInner.trim() || undefined,
+        closure: lehengaClosure.trim() || undefined,
       };
 
       const blouseDetailsObj = {
@@ -372,6 +392,7 @@ export default function AdminPage() {
         sleeves: blouseSleeves.trim() || undefined,
         size: blouseSize.trim() || undefined,
         work: blouseWork.trim() || undefined,
+        note: blouseNote.trim() || undefined,
       };
 
       const dupattaDetailsObj = {
@@ -379,6 +400,9 @@ export default function AdminPage() {
         color: dupattaColor.trim() || undefined,
         length: dupattaLength.trim() || undefined,
         work: dupattaWork.trim() || undefined,
+        width: dupattaWidth.trim() || undefined,
+        border: dupattaBorder.trim() || undefined,
+        drapeNote: dupattaDrapeNote.trim() || undefined,
       };
 
       // Helper to check if any properties in object are defined
@@ -408,6 +432,8 @@ export default function AdminPage() {
         dupattaDetails: hasAnyValue(dupattaDetailsObj) ? dupattaDetailsObj : undefined,
         highlights: highlightsInput.trim() ? highlightsInput.split('\n').map(h => h.trim()).filter(Boolean) : undefined,
         careInstructions: careInstructionsInput.trim() ? careInstructionsInput.split('\n').map(c => c.trim()).filter(Boolean) : undefined,
+        packageContents: packageContentsInput.trim() ? packageContentsInput.split('\n').map(p => p.trim()).filter(Boolean) : undefined,
+        suitableFor: suitableForInput.trim() ? suitableForInput.split('\n').map(s => s.trim()).filter(Boolean) : undefined,
         note: itemNote.trim() || undefined,
         styleStatement: itemStyleStatement.trim() || undefined,
         created_at: new Date().toISOString()
@@ -485,6 +511,8 @@ export default function AdminPage() {
 
       setHighlightsInput('');
       setCareInstructionsInput('');
+      setPackageContentsInput('');
+      setSuitableForInput('');
       setItemNote('');
       setItemStyleStatement('');
       
@@ -1097,6 +1125,29 @@ export default function AdminPage() {
                       />
                     </div>
                   </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">Lehenga Inner (Lining)</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Soft Cotton Lining Attached"
+                        value={lehengaInner}
+                        onChange={(e) => setLehengaInner(e.target.value)}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Lehenga Closure</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Drawstring with Tassels"
+                        value={lehengaClosure}
+                        onChange={(e) => setLehengaClosure(e.target.value)}
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -1172,6 +1223,19 @@ export default function AdminPage() {
                       />
                     </div>
                   </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">Blouse Note</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Comfortable and Lightweight Fabric"
+                        value={blouseNote}
+                        onChange={(e) => setBlouseNote(e.target.value)}
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -1224,6 +1288,42 @@ export default function AdminPage() {
                       />
                     </div>
                   </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">Dupatta Width</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Approx. 0.90 Meter"
+                        value={dupattaWidth}
+                        onChange={(e) => setDupattaWidth(e.target.value)}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Dupatta Border</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Embellished Lace Finishing"
+                        value={dupattaBorder}
+                        onChange={(e) => setDupattaBorder(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">Dupatta Drape Note</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Lightweight, Soft and Elegant Drape"
+                        value={dupattaDrapeNote}
+                        onChange={(e) => setDupattaDrapeNote(e.target.value)}
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -1250,6 +1350,28 @@ export default function AdminPage() {
                       placeholder="e.g.&#10;Dry Clean Only&#10;Steam or low heat iron recommended&#10;Store in a cool dry place"
                       value={careInstructionsInput}
                       onChange={(e) => setCareInstructionsInput(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Package Contents (One item per line)</label>
+                    <textarea
+                      className="form-input form-textarea"
+                      style={{ height: '80px' }}
+                      placeholder="e.g.&#10;1 Wine Lehenga (Chaniya)&#10;1 Mustard Yellow Printed Blouse (Choli)&#10;1 Mustard Yellow Designer Odhani (Dupatta)"
+                      value={packageContentsInput}
+                      onChange={(e) => setPackageContentsInput(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Suitable For (One item per line)</label>
+                    <textarea
+                      className="form-input form-textarea"
+                      style={{ height: '80px' }}
+                      placeholder="e.g.&#10;Navratri & Garba Nights&#10;Wedding Functions&#10;Special Occasions"
+                      value={suitableForInput}
+                      onChange={(e) => setSuitableForInput(e.target.value)}
                     />
                   </div>
 

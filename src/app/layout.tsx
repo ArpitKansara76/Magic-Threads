@@ -15,9 +15,13 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Navrang Chaniya Choli | Premium Indian Festive & Bridal Catalog",
+  title: "Magic Threads | Premium Indian Festive & Bridal Catalog",
   description: "Browse our exclusive collection of traditional Gujarati mirror-work Chaniya Cholis, heavy zardosi bridal lehengas, and pastel georgette fusions. Quick inquiry via WhatsApp.",
   keywords: "Chaniya Choli, Lehenga Choli, Navratri dress, Bridal Lehenga, Gujarati traditional dress, Garba dress, WhatsApp shopping",
+  icons: {
+    icon: "/images/logo.png",
+    apple: "/images/logo.png",
+  },
 };
 
 export default function RootLayout({

@@ -102,19 +102,6 @@ export default function ContactPage() {
             <div className="contact-info-item">
               <div className="contact-icon-wrapper">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                  <circle cx="12" cy="10" r="3"></circle>
-                </svg>
-              </div>
-              <div className="contact-info-details">
-                <h3>Our Boutique</h3>
-                <p>102, Heritage Plaza, Near CG Road,<br />Ahmedabad, Gujarat - 380009</p>
-              </div>
-            </div>
-
-            <div className="contact-info-item">
-              <div className="contact-icon-wrapper">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                   <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                   <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
@@ -135,7 +122,7 @@ export default function ContactPage() {
               </div>
               <div className="contact-info-details">
                 <h3>Email Support</h3>
-                <p><a href="mailto:info@magicthreads.com">info@magicthreads.com</a></p>
+                <p><a href="mailto:nishakansara2703@gmail.com">nishakansara2703@gmail.com</a></p>
               </div>
             </div>
 
@@ -148,23 +135,11 @@ export default function ContactPage() {
               </div>
               <div className="contact-info-details">
                 <h3>WhatsApp Chat</h3>
-                <p><a href={`https://api.whatsapp.com/send?phone=${SELLER_WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer">Send message on WhatsApp</a></p>
+                <p><a href={`https://api.whatsapp.com/send?phone=${SELLER_WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer">+91 8980082662</a></p>
               </div>
             </div>
 
-            {/* Google Map Mockup */}
-            <div className="contact-map-wrapper">
-              <iframe
-                title="Store Location Map"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d117511.95679901768!2d72.50280145!3d23.02024375!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395e848aba5bd449%3A0x4fccd11d0d5e162!2sAhmedabad%2C%20Gujarat!5e0!3m2!1sen!2sin!4v1699999999999!5m2!1sen!2sin"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen={false}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              ></iframe>
-            </div>
+
           </div>
 
           {/* Form Card Column */}

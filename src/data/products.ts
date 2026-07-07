@@ -25,6 +25,8 @@ export interface Product {
     waist?: string;
     length?: string;
     work?: string;
+    inner?: string;    // e.g. "Soft Cotton Lining Attached"
+    closure?: string;  // e.g. "Drawstring with Tassels"
   };
   blouseDetails?: {
     fabric?: string;
@@ -33,15 +35,21 @@ export interface Product {
     sleeves?: string;
     size?: string;
     work?: string;
+    note?: string;     // e.g. "Comfortable and Lightweight Fabric"
   };
   dupattaDetails?: {
     fabric?: string;
     color?: string;
     length?: string;
+    width?: string;    // e.g. "Approx. 0.90 Meter"
     work?: string;
+    border?: string;   // e.g. "Embellished Lace Finishing"
+    drapeNote?: string;// e.g. "Lightweight, Soft and Elegant Drape"
   };
   highlights?: string[];
   careInstructions?: string[];
+  packageContents?: string[];
+  suitableFor?: string[];
   note?: string;
   styleStatement?: string;
   created_at?: string;
@@ -360,23 +368,29 @@ export const products: Product[] = [
       fabric: "Premium Cotton Blend",
       color: "Deep Wine",
       flair: "Approx. 6.5 to 7 Meters",
-      waist: "Fits up to 40 Inches",
+      waist: "Up to 40 Inches",
       length: "42 Inches",
-      work: "Printed Floral Border with Decorative Lace Detailing"
+      work: "Printed Floral Border with Decorative Lace Detailing",
+      inner: "Soft Cotton Lining Attached",
+      closure: "Drawstring with Tassels"
     },
     blouseDetails: {
       fabric: "Premium Cotton Blend",
       color: "Wine & Mustard Yellow with Floral Print",
-      style: "V Neck",
+      style: "'V' Neck",
       sleeves: "Elbow-Length Sleeves",
       size: "Adjustable up to 42 Inches",
-      work: "Traditional Floral Print with Decorative Border Finishing"
+      work: "Traditional Floral Print with Decorative Border Finishing",
+      note: "Comfortable and Lightweight Fabric"
     },
     dupattaDetails: {
       fabric: "Premium Silk Blend",
       color: "Mustard Yellow",
-      length: "Approx. 2.30 Meters (Width: Approx. 0.90 Meter)",
-      work: "Delicate Butti Work with Decorative Lace Border"
+      length: "Approx. 2.30 Meters",
+      width: "Approx. 0.90 Meter",
+      work: "Delicate Butti Work with Decorative Lace Border",
+      border: "Embellished Lace Finishing",
+      drapeNote: "Lightweight, Soft and Elegant Drape"
     },
     highlights: [
       "Elegant and Royal Festive Color Combination",
@@ -436,7 +450,9 @@ export const products: Product[] = [
       fabric: "Dark pink vintage lagdi patta odhani",
       color: "Rani Pink",
       length: "Approx. 2.25 Meters",
-      work: "Elegant zari border with traditional motif detailing"
+      width: "Approx. 0.90 Meter",
+      work: "Elegant zari border with traditional motif detailing",
+      drapeNote: "Lightweight and Soft Drape"
     },
     highlights: [
       "Traditional Gujarati/Navratri Collection",
@@ -493,7 +509,9 @@ export const products: Product[] = [
       fabric: "Soft Cotton Silk / Art Silk Blend",
       color: "Bright Red-green design print",
       length: "Approx. 2.25 Meters",
-      work: "Detailed Heritage-Inspired Pattern with Colorful Hanging Tassels"
+      width: "Approx. 0.90 Meter",
+      work: "Detailed Heritage-Inspired Pattern with Colorful Hanging Tassels",
+      drapeNote: "Lightweight and Easy to Drape"
     },
     highlights: [
       "Rich Dark Mehendi Green Color",
@@ -537,7 +555,9 @@ export const products: Product[] = [
       flair: "Approx. 7.5 Meters",
       waist: "Up to 40 Inches",
       length: "42 Inches",
-      work: "Fine All-Over Traditional Dotted Print with Soft Cotton Lining and Drawstring Tassels"
+      work: "Fine All-Over Traditional Dotted Print",
+      inner: "Soft Cotton Lining Attached",
+      closure: "Drawstring with Tassels"
     },
     blouseDetails: {
       fabric: "Premium Rayon Cotton Blend",
@@ -545,13 +565,17 @@ export const products: Product[] = [
       style: "Round Neck",
       sleeves: "Elbow-Length Sleeves",
       size: "Adjustable up to 42 Inches",
-      work: "Fine Dotted Pattern with Elegant Finish"
+      work: "Fine Dotted Pattern with Elegant Finish",
+      note: "Comfortable and Lightweight Fabric"
     },
     dupattaDetails: {
       fabric: "Premium Cotton Silk Blend",
       color: "Bright Red",
-      length: "Approx. 2.15 Meters (Width: Approx. 0.90 Meter)",
-      work: "Traditional Ethnic Print with Intricate Motif Design (Soft and Easy to Drape)"
+      length: "Approx. 2.15 Meters",
+      width: "Approx. 0.90 Meter",
+      work: "Traditional Ethnic Print with Intricate Motif Design",
+      border: "Embellished Decorative Border",
+      drapeNote: "Soft and Easy to Drape"
     },
     highlights: [
       "Elegant and Sophisticated Color Combination",

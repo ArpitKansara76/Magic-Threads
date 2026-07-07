@@ -6,7 +6,7 @@ import { products as initialProducts, Product } from '../data/products';
 import { supabase } from '../utils/supabase/client';
 
 // Configurable seller phone number (with country code, e.g., +91 for India)
-const SELLER_WHATSAPP_NUMBER = '919876543210'; 
+const SELLER_WHATSAPP_NUMBER = '919876543210';
 
 const formatCategory = (cat: string) => {
   if (cat === 'chaniya-choli') return 'Chaniya Choli';
@@ -25,22 +25,22 @@ export default function CatalogPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [activeMedia, setActiveMedia] = useState<{type: 'image' | 'video', url: string} | null>(null);
-  
+  const [activeMedia, setActiveMedia] = useState<{ type: 'image' | 'video', url: string } | null>(null);
+
   // Inquiry Modals
   const [inquiryProduct, setInquiryProduct] = useState<Product | null>(null);
   const [isBulkInquiry, setIsBulkInquiry] = useState<boolean>(false);
   const [showInquiryModal, setShowInquiryModal] = useState<boolean>(false);
-  
+
   // Form fields
   const [userName, setUserName] = useState<string>('');
   const [userPhone, setUserPhone] = useState<string>('');
   const [customNotes, setCustomNotes] = useState<string>('');
-  
+
   // Inquiry Bag (Cart)
   const [inquiryBag, setInquiryBag] = useState<Product[]>([]);
   const [isBagOpen, setIsBagOpen] = useState<boolean>(false);
-  
+
   // Toast notifications
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -72,7 +72,7 @@ export default function CatalogPage() {
         const { data: { user: currentUser } } = await supabase.auth.getUser();
         if (currentUser) {
           setUser(currentUser);
-          
+
           // Fetch additional profile data (role)
           const { data: profile } = await supabase
             .from('profiles')
@@ -109,7 +109,7 @@ export default function CatalogPage() {
       try {
         // Simple sync strategy: delete all and re-insert
         await supabase.from('inquiry_bag').delete().eq('user_id', user.id).async();
-        
+
         if (newBag.length > 0) {
           const rows = newBag.map(item => ({
             user_id: user.id,
@@ -207,10 +207,10 @@ export default function CatalogPage() {
     }
 
     let messageText = '';
-    
+
     if (isBulkInquiry) {
       // Formulate bulk WhatsApp message
-      const itemsList = inquiryBag.map((item, index) => 
+      const itemsList = inquiryBag.map((item, index) =>
         `${index + 1}. *${item.name}* (ID: ${item.id}) - ₹${item.price.toLocaleString('en-IN')}`
       ).join('\n');
 
@@ -222,7 +222,7 @@ export default function CatalogPage() {
         (userPhone.trim() ? `📞 *Contact:* ${userPhone.trim()}\n` : '') +
         (customNotes.trim() ? `💬 *Customization/Message:* ${customNotes.trim()}\n` : '') +
         `\nCould you please share details on stock status and shipping? Thank you!`;
-        
+
       // Clear bag after successful inquiry
       saveBag([]);
     } else if (inquiryProduct) {
@@ -246,7 +246,7 @@ export default function CatalogPage() {
     // Generate WhatsApp url and open it in a new tab
     const encodedText = encodeURIComponent(messageText);
     const whatsappUrl = `https://api.whatsapp.com/send?phone=${SELLER_WHATSAPP_NUMBER}&text=${encodedText}`;
-    
+
     window.open(whatsappUrl, '_blank');
     closeInquiryModal();
     triggerToast("Inquiry sent successfully via WhatsApp!");
@@ -263,8 +263,8 @@ export default function CatalogPage() {
     const list = productsList.filter(product => {
       const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
       const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            product.workType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            product.fabric.toLowerCase().includes(searchQuery.toLowerCase());
+        product.workType.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.fabric.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
 
@@ -318,9 +318,9 @@ export default function CatalogPage() {
             {user && (
               <div className="user-nav-profile" style={{ marginRight: '1rem' }}>
                 {userProfile?.role === 'admin' && (
-                  <a 
-                    href="/admin" 
-                    className="btn-admin-action btn-admin-primary" 
+                  <a
+                    href="/admin"
+                    className="btn-admin-action btn-admin-primary"
                     style={{ textDecoration: 'none', padding: '0.5rem 0.9rem', fontSize: '0.85rem' }}
                   >
                     Admin Panel
@@ -331,14 +331,14 @@ export default function CatalogPage() {
               </div>
             )}
 
-            <button 
+            <button
               className="inquiry-badge-btn"
               id="inquiry-bag-trigger"
               onClick={() => setIsBagOpen(true)}
               aria-label="Open Inquiry Bag"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12z"/>
+                <path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12z" />
               </svg>
               Inquiry Bag
               {inquiryBag.length > 0 && (
@@ -363,7 +363,7 @@ export default function CatalogPage() {
           <a href="#catalog" className="hero-cta-btn" id="explore-collection-btn">
             Explore Collection
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+              <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
             </svg>
           </a>
         </div>
@@ -376,42 +376,42 @@ export default function CatalogPage() {
           <div className="search-bar-container">
             <span className="search-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
               </svg>
             </span>
-            <input 
-              type="text" 
+            <input
+              type="text"
               className="search-input"
               id="search-products-input"
-              placeholder="Search by name, fabric, or work type..." 
+              placeholder="Search by name, fabric, or work type..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
 
           <div className="category-tabs">
-            <button 
+            <button
               className={`category-tab ${selectedCategory === 'all' ? 'active' : ''}`}
               id="filter-tab-all"
               onClick={() => setSelectedCategory('all')}
             >
               All Collection
             </button>
-            <button 
+            <button
               className={`category-tab ${selectedCategory === 'chaniya-choli' ? 'active' : ''}`}
               id="filter-tab-chaniya-choli"
               onClick={() => setSelectedCategory('chaniya-choli')}
             >
               Chaniya Choli
             </button>
-            <button 
+            <button
               className={`category-tab ${selectedCategory === 'home-decor' ? 'active' : ''}`}
               id="filter-tab-home-decor"
               onClick={() => setSelectedCategory('home-decor')}
             >
               Home Decor
             </button>
-            <button 
+            <button
               className={`category-tab ${selectedCategory === 'cushion-covers' ? 'active' : ''}`}
               id="filter-tab-cushion-covers"
               onClick={() => setSelectedCategory('cushion-covers')}
@@ -436,14 +436,14 @@ export default function CatalogPage() {
                 {product.tag && product.tag.toLowerCase() !== 'coming soon' && (
                   <span className="product-tag">{product.tag}</span>
                 )}
-                
-                <div 
+
+                <div
                   className="product-image-container"
                   onClick={() => !isComingSoon && openProductDetails(product)}
                   style={{ cursor: isComingSoon ? 'default' : 'pointer' }}
                 >
-                  <Image 
-                    src={product.image} 
+                  <Image
+                    src={product.image}
                     alt={product.name}
                     width={350}
                     height={350}
@@ -458,7 +458,7 @@ export default function CatalogPage() {
 
                 <div className="product-info">
                   <span className="product-category">{formatCategory(product.category)}</span>
-                  <h3 
+                  <h3
                     className="product-name"
                     onClick={() => !isComingSoon && openProductDetails(product)}
                     style={{ cursor: isComingSoon ? 'default' : 'pointer' }}
@@ -466,7 +466,7 @@ export default function CatalogPage() {
                     {product.name}
                   </h3>
                   <p className="product-work-type">{product.workType}</p>
-                  
+
                   <div className="product-price-row">
                     <span className="product-price">₹{product.price.toLocaleString('en-IN')}</span>
                     <span className="product-original-price">₹{product.originalPrice.toLocaleString('en-IN')}</span>
@@ -476,42 +476,42 @@ export default function CatalogPage() {
                   {!isComingSoon ? (
                     <>
                       <div className="product-card-actions">
-                        <button 
+                        <button
                           className="btn-details"
                           id={`btn-details-${product.id}`}
                           onClick={() => openProductDetails(product)}
                         >
                           View Specs
                         </button>
-                        <button 
+                        <button
                           className="btn-inquire"
                           id={`btn-inquire-card-${product.id}`}
                           onClick={(e) => openSingleInquiry(product, e)}
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" style={{marginRight: '6px', verticalAlign: 'middle', flexShrink: 0}}>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" style={{ marginRight: '6px', verticalAlign: 'middle', flexShrink: 0 }}>
                             <rect width="24" height="24" rx="6" fill="#25D366" />
                             <g transform="translate(4, 4)">
-                              <path fill="#FFFFFF" d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.907h.004c4.368 0 7.926-3.558 7.93-7.93a7.9 7.9 0 0 0-2.327-5.643zM11.75 11.517a2.23 2.23 0 0 1-1.07.513c-.273.069-.51.137-.8.02-.284-.117-.508-.228-1.002-.556-1.032-.687-1.782-1.758-2.222-2.47-.07-.113-.098-.2-.04-.27.054-.067.118-.148.18-.22.062-.072.079-.123.117-.205.037-.082.02-.153-.01-.225-.03-.072-.27-.655-.37-.899-.098-.238-.198-.205-.27-.205a8.3 8.3 0 0 0-.414-.008c-.146 0-.383.056-.583.275-.2.22-.765.748-.765 1.823s.783 2.115.892 2.262c.11.147 1.54 2.352 3.732 3.298.52.224.927.359 1.243.46.523.167.997.143 1.374.088.42-.062 1.777-.726 2.027-1.428.25-.701.25-1.303.175-1.428-.075-.126-.27-.197-.57-.346z"/>
+                              <path fill="#FFFFFF" d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.907h.004c4.368 0 7.926-3.558 7.93-7.93a7.9 7.9 0 0 0-2.327-5.643zM11.75 11.517a2.23 2.23 0 0 1-1.07.513c-.273.069-.51.137-.8.02-.284-.117-.508-.228-1.002-.556-1.032-.687-1.782-1.758-2.222-2.47-.07-.113-.098-.2-.04-.27.054-.067.118-.148.18-.22.062-.072.079-.123.117-.205.037-.082.02-.153-.01-.225-.03-.072-.27-.655-.37-.899-.098-.238-.198-.205-.27-.205a8.3 8.3 0 0 0-.414-.008c-.146 0-.383.056-.583.275-.2.22-.765.748-.765 1.823s.783 2.115.892 2.262c.11.147 1.54 2.352 3.732 3.298.52.224.927.359 1.243.46.523.167.997.143 1.374.088.42-.062 1.777-.726 2.027-1.428.25-.701.25-1.303.175-1.428-.075-.126-.27-.197-.57-.346z" />
                             </g>
                           </svg>
                           Inquire
                         </button>
                       </div>
-                      
-                      <button 
+
+                      <button
                         className="btn-add-bag"
                         style={{ width: '100%', marginTop: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                         id={`btn-add-bag-${product.id}`}
                         onClick={(e) => handleAddToBag(product, e)}
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style={{marginRight: '6px', verticalAlign: 'middle'}}>
-                          <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
+                          <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
                         </svg>
                         Add to Bag
                       </button>
                     </>
                   ) : (
-                    <button 
+                    <button
                       className="btn-coming-soon-disabled"
                       disabled
                       style={{ width: '100%', marginTop: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -525,9 +525,9 @@ export default function CatalogPage() {
           })}
 
           {filteredProducts.length === 0 && (
-            <div style={{gridColumn: '1/-1', textAlign: 'center', padding: '4rem 0', color: 'var(--color-text-muted)'}}>
-              <p style={{fontSize: '1.2rem', marginBottom: '1rem'}}>No Chaniya Cholis found matching your search.</p>
-              <button 
+            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem 0', color: 'var(--color-text-muted)' }}>
+              <p style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>No Chaniya Cholis found matching your search.</p>
+              <button
                 className="category-tab"
                 onClick={() => { setSelectedCategory('all'); setSearchQuery(''); }}
               >
@@ -542,9 +542,9 @@ export default function CatalogPage() {
       <footer className="app-footer">
         <div className="footer-container">
           <div className="footer-brand">
-            <span className="brand-logo-text" style={{fontSize: '2rem'}}>MAGIC THREADS</span>
-            <div className="brand-logo-sub" style={{marginTop: '-6px', letterSpacing: '1px', textTransform: 'lowercase', fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: '0.95rem'}}>where magic meets tradition</div>
-            <p className="footer-brand-desc" style={{marginTop: '1rem'}}>
+            <span className="brand-logo-text" style={{ fontSize: '2rem' }}>MAGIC THREADS</span>
+            <div className="brand-logo-sub" style={{ marginTop: '-6px', letterSpacing: '1px', textTransform: 'lowercase', fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: '0.95rem' }}>where magic meets tradition</div>
+            <p className="footer-brand-desc" style={{ marginTop: '1rem' }}>
               Elegance woven into threads. We specialize in bringing you the most beautiful, authentic, and modern Gujarati designer Chaniya Cholis for Navratri, weddings, and special events.
             </p>
           </div>
@@ -585,17 +585,17 @@ export default function CatalogPage() {
 
       {/* PRODUCT DETAILS MODAL */}
       {selectedProduct && (
-        <div 
+        <div
           className="modal-backdrop"
           onClick={closeProductDetails}
           id="product-details-modal-backdrop"
         >
-          <div 
+          <div
             className="modal-window"
             onClick={(e) => e.stopPropagation()}
             id="product-details-modal-window"
           >
-            <button 
+            <button
               className="modal-close-btn"
               onClick={closeProductDetails}
               aria-label="Close Modal"
@@ -607,17 +607,17 @@ export default function CatalogPage() {
               <div className="modal-image-panel">
                 <div className="modal-main-image-wrapper">
                   {activeMedia && activeMedia.type === 'video' ? (
-                    <video 
-                      src={activeMedia.url} 
-                      controls 
-                      autoPlay 
-                      loop 
+                    <video
+                      src={activeMedia.url}
+                      controls
+                      autoPlay
+                      loop
                       muted
                       className="modal-main-video"
                     />
                   ) : (
-                    <Image 
-                      src={activeMedia?.url || selectedProduct.image} 
+                    <Image
+                      src={activeMedia?.url || selectedProduct.image}
                       alt={selectedProduct.name}
                       width={400}
                       height={500}
@@ -632,30 +632,30 @@ export default function CatalogPage() {
                   <div className="modal-thumbnails">
                     {/* Video Thumbnail (Shown First) */}
                     {selectedProduct.video && (
-                      <div 
+                      <div
                         className={`thumbnail-item ${activeMedia?.type === 'video' ? 'active' : ''}`}
                         onClick={() => setActiveMedia({ type: 'video', url: selectedProduct.video! })}
                       >
-                        <img 
-                          src={selectedProduct.image} 
+                        <img
+                          src={selectedProduct.image}
                           alt={`${selectedProduct.name} video preview`}
                           className="thumbnail-img"
                         />
                         <div className="thumbnail-video-overlay">
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z"/>
+                            <path d="M8 5v14l11-7z" />
                           </svg>
                         </div>
                       </div>
                     )}
 
                     {/* Primary Image Thumbnail */}
-                    <div 
+                    <div
                       className={`thumbnail-item ${activeMedia?.type === 'image' && activeMedia.url === selectedProduct.image ? 'active' : ''}`}
                       onClick={() => setActiveMedia({ type: 'image', url: selectedProduct.image })}
                     >
-                      <img 
-                        src={selectedProduct.image} 
+                      <img
+                        src={selectedProduct.image}
                         alt={`${selectedProduct.name} main`}
                         className="thumbnail-img"
                       />
@@ -666,13 +666,13 @@ export default function CatalogPage() {
                       // Skip if it is the same as primary image (since we already displayed it)
                       if (imgUrl === selectedProduct.image) return null;
                       return (
-                        <div 
+                        <div
                           key={idx}
                           className={`thumbnail-item ${activeMedia?.type === 'image' && activeMedia.url === imgUrl ? 'active' : ''}`}
                           onClick={() => setActiveMedia({ type: 'image', url: imgUrl })}
                         >
-                          <img 
-                            src={imgUrl} 
+                          <img
+                            src={imgUrl}
                             alt={`${selectedProduct.name} gallery ${idx + 1}`}
                             className="thumbnail-img"
                           />
@@ -690,9 +690,9 @@ export default function CatalogPage() {
                 </div>
 
                 <div className="modal-price-row">
-                  <span className="product-price" style={{fontSize: '2rem'}}>₹{selectedProduct.price.toLocaleString('en-IN')}</span>
-                  <span className="product-original-price" style={{fontSize: '1.2rem'}}>₹{selectedProduct.originalPrice.toLocaleString('en-IN')}</span>
-                  <span className="product-discount" style={{fontSize: '1.1rem'}}>({selectedProduct.discount}% OFF)</span>
+                  <span className="product-price" style={{ fontSize: '2rem' }}>₹{selectedProduct.price.toLocaleString('en-IN')}</span>
+                  <span className="product-original-price" style={{ fontSize: '1.2rem' }}>₹{selectedProduct.originalPrice.toLocaleString('en-IN')}</span>
+                  <span className="product-discount" style={{ fontSize: '1.1rem' }}>({selectedProduct.discount}% OFF)</span>
                 </div>
 
                 <p className="modal-desc">{selectedProduct.description}</p>
@@ -700,14 +700,14 @@ export default function CatalogPage() {
                 {/* Tabs Selector (Only shown if product has lehengaDetails) */}
                 {selectedProduct.lehengaDetails ? (
                   <div className="product-details-tabs">
-                    <button 
+                    <button
                       className={`details-tab-btn ${activeDetailTab === 'details' ? 'active' : ''}`}
                       onClick={() => setActiveDetailTab('details')}
                     >
                       Specifications
                     </button>
-                    {selectedProduct.highlights && (
-                      <button 
+                    {(selectedProduct.highlights || selectedProduct.packageContents || selectedProduct.suitableFor) && (
+                      <button
                         className={`details-tab-btn ${activeDetailTab === 'highlights' ? 'active' : ''}`}
                         onClick={() => setActiveDetailTab('highlights')}
                       >
@@ -715,7 +715,7 @@ export default function CatalogPage() {
                       </button>
                     )}
                     {selectedProduct.careInstructions && (
-                      <button 
+                      <button
                         className={`details-tab-btn ${activeDetailTab === 'care' ? 'active' : ''}`}
                         onClick={() => setActiveDetailTab('care')}
                       >
@@ -724,11 +724,11 @@ export default function CatalogPage() {
                     )}
                   </div>
                 ) : (
-                  <h4 style={{fontFamily: 'var(--font-sans)', fontSize: '0.85rem', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '0.5rem', fontWeight: 600}}>
+                  <h4 style={{ fontFamily: 'var(--font-sans)', fontSize: '0.85rem', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '0.5rem', fontWeight: 600 }}>
                     Product Specifications
                   </h4>
                 )}
-                
+
                 {/* Tab content rendering */}
                 {selectedProduct.lehengaDetails ? (
                   <div style={{ marginBottom: '1.5rem', flexGrow: 1, overflowY: 'auto', paddingRight: '4px' }}>
@@ -736,19 +736,19 @@ export default function CatalogPage() {
                       <div className="tab-pane-content">
                         {/* Sub-tabs Selector for Lehenga/Blouse/Dupatta */}
                         <div className="spec-sub-tabs">
-                          <button 
+                          <button
                             className={`sub-tab-btn ${activeSpecSubTab === 'lehenga' ? 'active' : ''}`}
                             onClick={() => setActiveSpecSubTab('lehenga')}
                           >
                             👗 Lehenga
                           </button>
-                          <button 
+                          <button
                             className={`sub-tab-btn ${activeSpecSubTab === 'blouse' ? 'active' : ''}`}
                             onClick={() => setActiveSpecSubTab('blouse')}
                           >
                             👚 Blouse
                           </button>
-                          <button 
+                          <button
                             className={`sub-tab-btn ${activeSpecSubTab === 'dupatta' ? 'active' : ''}`}
                             onClick={() => setActiveSpecSubTab('dupatta')}
                           >
@@ -798,6 +798,18 @@ export default function CatalogPage() {
                                     <td className="spec-val">{selectedProduct.lehengaDetails.work}</td>
                                   </tr>
                                 )}
+                                {selectedProduct.lehengaDetails.inner && (
+                                  <tr>
+                                    <td className="spec-label">Inner Lining</td>
+                                    <td className="spec-val">{selectedProduct.lehengaDetails.inner}</td>
+                                  </tr>
+                                )}
+                                {selectedProduct.lehengaDetails.closure && (
+                                  <tr>
+                                    <td className="spec-label">Closure</td>
+                                    <td className="spec-val">{selectedProduct.lehengaDetails.closure}</td>
+                                  </tr>
+                                )}
                               </tbody>
                             </table>
                           </div>
@@ -845,6 +857,12 @@ export default function CatalogPage() {
                                     <td className="spec-val">{selectedProduct.blouseDetails.work}</td>
                                   </tr>
                                 )}
+                                {selectedProduct.blouseDetails.note && (
+                                  <tr>
+                                    <td className="spec-label">Note</td>
+                                    <td className="spec-val">{selectedProduct.blouseDetails.note}</td>
+                                  </tr>
+                                )}
                               </tbody>
                             </table>
                           </div>
@@ -878,6 +896,24 @@ export default function CatalogPage() {
                                   <tr>
                                     <td className="spec-label">Work / Art</td>
                                     <td className="spec-val">{selectedProduct.dupattaDetails.work}</td>
+                                  </tr>
+                                )}
+                                {selectedProduct.dupattaDetails.border && (
+                                  <tr>
+                                    <td className="spec-label">Border</td>
+                                    <td className="spec-val">{selectedProduct.dupattaDetails.border}</td>
+                                  </tr>
+                                )}
+                                {selectedProduct.dupattaDetails.width && (
+                                  <tr>
+                                    <td className="spec-label">Width</td>
+                                    <td className="spec-val">{selectedProduct.dupattaDetails.width}</td>
+                                  </tr>
+                                )}
+                                {selectedProduct.dupattaDetails.drapeNote && (
+                                  <tr>
+                                    <td className="spec-label">Drape</td>
+                                    <td className="spec-val">{selectedProduct.dupattaDetails.drapeNote}</td>
                                   </tr>
                                 )}
                               </tbody>
@@ -917,6 +953,20 @@ export default function CatalogPage() {
                           </blockquote>
                         )}
 
+                        {selectedProduct.packageContents && selectedProduct.packageContents.length > 0 && (
+                          <div className="highlights-section-card">
+                            <h5 className="spec-section-title">📦 Package Contents</h5>
+                            <ul className="highlights-list">
+                              {selectedProduct.packageContents.map((pc, index) => (
+                                <li key={index}>
+                                  <span className="bullet-icon">•</span>
+                                  <span>{pc}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
                         {selectedProduct.highlights && selectedProduct.highlights.length > 0 && (
                           <div className="highlights-section-card">
                             <h5 className="spec-section-title">✨ Highlights</h5>
@@ -925,6 +975,20 @@ export default function CatalogPage() {
                                 <li key={index}>
                                   <span className="check-icon">✔</span>
                                   <span>{hl}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {selectedProduct.suitableFor && selectedProduct.suitableFor.length > 0 && (
+                          <div className="highlights-section-card">
+                            <h5 className="spec-section-title">🎉 Suitable For</h5>
+                            <ul className="highlights-list">
+                              {selectedProduct.suitableFor.map((sf, index) => (
+                                <li key={index}>
+                                  <span className="bullet-icon">•</span>
+                                  <span>{sf}</span>
                                 </li>
                               ))}
                             </ul>
@@ -994,9 +1058,9 @@ export default function CatalogPage() {
 
 
 
-                 <div style={{display: 'flex', gap: '1rem', marginTop: 'auto', width: '100%'}}>
+                <div style={{ display: 'flex', gap: '1rem', marginTop: 'auto', width: '100%' }}>
                   {selectedProduct && (!selectedProduct.isAvailable || selectedProduct.tag?.toLowerCase() === 'coming soon') ? (
-                    <button 
+                    <button
                       className="btn-coming-soon-disabled"
                       disabled
                       style={{ width: '100%', padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -1005,9 +1069,9 @@ export default function CatalogPage() {
                     </button>
                   ) : (
                     <>
-                      <button 
+                      <button
                         className="btn-inquire"
-                        style={{flexGrow: 2, padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'}}
+                        style={{ flexGrow: 2, padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
                         id="modal-inquire-now-btn"
                         onClick={() => {
                           // Open inquiry
@@ -1017,18 +1081,18 @@ export default function CatalogPage() {
                           closeProductDetails();
                         }}
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" style={{flexShrink: 0}}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
                           <rect width="24" height="24" rx="6" fill="#25D366" />
                           <g transform="translate(4, 4)">
-                            <path fill="#FFFFFF" d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.907h.004c4.368 0 7.926-3.558 7.93-7.93a7.9 7.9 0 0 0-2.327-5.643zM11.75 11.517a2.23 2.23 0 0 1-1.07.513c-.273.069-.51.137-.8.02-.284-.117-.508-.228-1.002-.556-1.032-.687-1.782-1.758-2.222-2.47-.07-.113-.098-.2-.04-.27.054-.067.118-.148.18-.22.062-.072.079-.123.117-.205.037-.082.02-.153-.01-.225-.03-.072-.27-.655-.37-.899-.098-.238-.198-.205-.27-.205a8.3 8.3 0 0 0-.414-.008c-.146 0-.383.056-.583.275-.2.22-.765.748-.765 1.823s.783 2.115.892 2.262c.11.147 1.54 2.352 3.732 3.298.52.224.927.359 1.243.46.523.167.997.143 1.374.088.42-.062 1.777-.726 2.027-1.428.25-.701.25-1.303.175-1.428-.075-.126-.27-.197-.57-.346z"/>
+                            <path fill="#FFFFFF" d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.907h.004c4.368 0 7.926-3.558 7.93-7.93a7.9 7.9 0 0 0-2.327-5.643zM11.75 11.517a2.23 2.23 0 0 1-1.07.513c-.273.069-.51.137-.8.02-.284-.117-.508-.228-1.002-.556-1.032-.687-1.782-1.758-2.222-2.47-.07-.113-.098-.2-.04-.27.054-.067.118-.148.18-.22.062-.072.079-.123.117-.205.037-.082.02-.153-.01-.225-.03-.072-.27-.655-.37-.899-.098-.238-.198-.205-.27-.205a8.3 8.3 0 0 0-.414-.008c-.146 0-.383.056-.583.275-.2.22-.765.748-.765 1.823s.783 2.115.892 2.262c.11.147 1.54 2.352 3.732 3.298.52.224.927.359 1.243.46.523.167.997.143 1.374.088.42-.062 1.777-.726 2.027-1.428.25-.701.25-1.303.175-1.428-.075-.126-.27-.197-.57-.346z" />
                           </g>
                         </svg>
                         Inquire on WhatsApp
                       </button>
-                      
+
                       <button
                         className="btn-add-bag"
-                        style={{flexGrow: 1, padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'}}
+                        style={{ flexGrow: 1, padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
                         id="modal-add-bag-btn"
                         onClick={(e) => {
                           handleAddToBag(selectedProduct, e);
@@ -1036,7 +1100,7 @@ export default function CatalogPage() {
                         }}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+                          <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
                         </svg>
                         Add to Bag
                       </button>
@@ -1051,17 +1115,17 @@ export default function CatalogPage() {
 
       {/* INQUIRY FORM MODAL */}
       {showInquiryModal && (
-        <div 
+        <div
           className="modal-backdrop"
           onClick={closeInquiryModal}
           id="inquiry-form-modal-backdrop"
         >
-          <div 
+          <div
             className="modal-window modal-window-small"
             onClick={(e) => e.stopPropagation()}
             id="inquiry-form-modal-window"
           >
-            <button 
+            <button
               className="modal-close-btn"
               onClick={closeInquiryModal}
               aria-label="Close Modal"
@@ -1074,8 +1138,8 @@ export default function CatalogPage() {
                 {isBulkInquiry ? "Send Bulk Inquiry" : "Send Product Inquiry"}
               </h2>
               <p className="inquiry-form-sub">
-                {isBulkInquiry 
-                  ? `Inquiring about ${inquiryBag.length} Chaniya Cholis` 
+                {isBulkInquiry
+                  ? `Inquiring about ${inquiryBag.length} Chaniya Cholis`
                   : `For: ${inquiryProduct?.name}`}
               </p>
             </div>
@@ -1085,8 +1149,8 @@ export default function CatalogPage() {
               {!isBulkInquiry && inquiryProduct && (
                 <div className="product-summary-card">
                   <div className="product-summary-img-wrapper">
-                    <Image 
-                      src={inquiryProduct.image} 
+                    <Image
+                      src={inquiryProduct.image}
                       alt={inquiryProduct.name}
                       width={60}
                       height={60}
@@ -1102,9 +1166,9 @@ export default function CatalogPage() {
 
               <div className="form-group">
                 <label className="form-label" htmlFor="inquiry-user-name">Your Full Name *</label>
-                <input 
-                  type="text" 
-                  id="inquiry-user-name" 
+                <input
+                  type="text"
+                  id="inquiry-user-name"
                   className="form-input"
                   placeholder="Enter your name"
                   value={userName}
@@ -1115,11 +1179,11 @@ export default function CatalogPage() {
 
               <div className="form-group">
                 <label className="form-label" htmlFor="inquiry-user-phone">WhatsApp Number (Optional)</label>
-                <input 
-                  type="tel" 
-                  id="inquiry-user-phone" 
+                <input
+                  type="tel"
+                  id="inquiry-user-phone"
                   className="form-input"
-                  placeholder="e.g. +91 98765 43210"
+                  placeholder="e.g. +91 8980082662"
                   value={userPhone}
                   onChange={(e) => setUserPhone(e.target.value)}
                 />
@@ -1129,8 +1193,8 @@ export default function CatalogPage() {
 
               <div className="form-group">
                 <label className="form-label" htmlFor="inquiry-user-notes">Custom Notes / Special Instructions</label>
-                <textarea 
-                  id="inquiry-user-notes" 
+                <textarea
+                  id="inquiry-user-notes"
                   className="form-input form-textarea"
                   placeholder="Any customization requirements (e.g. neck depth, sleeve length, borders, or general questions)..."
                   value={customNotes}
@@ -1138,15 +1202,15 @@ export default function CatalogPage() {
                 />
               </div>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="btn-submit-inquiry"
                 id="submit-whatsapp-inquiry-btn"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" style={{marginRight: '8px', flexShrink: 0}}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" style={{ marginRight: '8px', flexShrink: 0 }}>
                   <rect width="24" height="24" rx="6" fill="#25D366" />
                   <g transform="translate(4, 4)">
-                    <path fill="#FFFFFF" d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.907h.004c4.368 0 7.926-3.558 7.93-7.93a7.9 7.9 0 0 0-2.327-5.643zM11.75 11.517a2.23 2.23 0 0 1-1.07.513c-.273.069-.51.137-.8.02-.284-.117-.508-.228-1.002-.556-1.032-.687-1.782-1.758-2.222-2.47-.07-.113-.098-.2-.04-.27.054-.067.118-.148.18-.22.062-.072.079-.123.117-.205.037-.082.02-.153-.01-.225-.03-.072-.27-.655-.37-.899-.098-.238-.198-.205-.27-.205a8.3 8.3 0 0 0-.414-.008c-.146 0-.383.056-.583.275-.2.22-.765.748-.765 1.823s.783 2.115.892 2.262c.11.147 1.54 2.352 3.732 3.298.52.224.927.359 1.243.46.523.167.997.143 1.374.088.42-.062 1.777-.726 2.027-1.428.25-.701.25-1.303.175-1.428-.075-.126-.27-.197-.57-.346z"/>
+                    <path fill="#FFFFFF" d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.907h.004c4.368 0 7.926-3.558 7.93-7.93a7.9 7.9 0 0 0-2.327-5.643zM11.75 11.517a2.23 2.23 0 0 1-1.07.513c-.273.069-.51.137-.8.02-.284-.117-.508-.228-1.002-.556-1.032-.687-1.782-1.758-2.222-2.47-.07-.113-.098-.2-.04-.27.054-.067.118-.148.18-.22.062-.072.079-.123.117-.205.037-.082.02-.153-.01-.225-.03-.072-.27-.655-.37-.899-.098-.238-.198-.205-.27-.205a8.3 8.3 0 0 0-.414-.008c-.146 0-.383.056-.583.275-.2.22-.765.748-.765 1.823s.783 2.115.892 2.262c.11.147 1.54 2.352 3.732 3.298.52.224.927.359 1.243.46.523.167.997.143 1.374.088.42-.062 1.777-.726 2.027-1.428.25-.701.25-1.303.175-1.428-.075-.126-.27-.197-.57-.346z" />
                   </g>
                 </svg>
                 Open WhatsApp & Chat
@@ -1158,13 +1222,13 @@ export default function CatalogPage() {
 
       {/* SLIDE-OVER INQUIRY BAG PANEL */}
       {isBagOpen && (
-        <div 
+        <div
           className="modal-backdrop"
           onClick={() => setIsBagOpen(false)}
           id="cart-panel-backdrop"
-          style={{padding: 0, justifyContent: 'flex-end'}}
+          style={{ padding: 0, justifyContent: 'flex-end' }}
         >
-          <div 
+          <div
             className="cart-panel"
             onClick={(e) => e.stopPropagation()}
             id="cart-panel-window"
@@ -1172,13 +1236,13 @@ export default function CatalogPage() {
             <div className="cart-header">
               <h2 className="cart-title">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="var(--color-gold)" viewBox="0 0 24 24">
-                  <path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12z"/>
+                  <path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12z" />
                 </svg>
                 Inquiry Bag
               </h2>
-              <button 
+              <button
                 className="modal-close-btn"
-                style={{position: 'static', width: '30px', height: '30px'}}
+                style={{ position: 'static', width: '30px', height: '30px' }}
                 onClick={() => setIsBagOpen(false)}
               >
                 &times;
@@ -1189,8 +1253,8 @@ export default function CatalogPage() {
               {inquiryBag.map((item) => (
                 <div className="cart-item" key={item.id}>
                   <div className="cart-item-img-wrapper">
-                    <Image 
-                      src={item.image} 
+                    <Image
+                      src={item.image}
                       alt={item.name}
                       width={70}
                       height={70}
@@ -1202,7 +1266,7 @@ export default function CatalogPage() {
                     <span className="cart-item-price">₹{item.price.toLocaleString('en-IN')}</span>
                     <span className="cart-item-meta">{item.fabric}</span>
                   </div>
-                  <button 
+                  <button
                     className="cart-item-remove-btn"
                     id={`btn-remove-item-${item.id}`}
                     onClick={(e) => handleRemoveFromBag(item.id, e)}
@@ -1217,11 +1281,11 @@ export default function CatalogPage() {
                 <div className="empty-cart-view">
                   <span className="empty-cart-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12z"/>
+                      <path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12z" />
                     </svg>
                   </span>
                   <p>Your inquiry bag is empty.</p>
-                  <p style={{fontSize: '0.85rem', color: 'var(--color-text-muted)'}}>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
                     Add pieces from our catalog to inquire about them together!
                   </p>
                 </div>
@@ -1234,20 +1298,20 @@ export default function CatalogPage() {
                   <span>Selected Items:</span>
                   <span>{inquiryBag.length} Pieces</span>
                 </div>
-                <div className="cart-total-row" style={{color: 'var(--color-gold-bright)'}}>
+                <div className="cart-total-row" style={{ color: 'var(--color-gold-bright)' }}>
                   <span>Est. Value:</span>
                   <span>₹{inquiryBag.reduce((total, item) => total + item.price, 0).toLocaleString('en-IN')}</span>
                 </div>
-                <button 
+                <button
                   className="btn-submit-inquiry"
-                  style={{marginTop: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'}}
+                  style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
                   id="bulk-inquiry-proceed-btn"
                   onClick={openBulkInquiry}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" style={{flexShrink: 0}}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
                     <rect width="24" height="24" rx="6" fill="#25D366" />
                     <g transform="translate(4, 4)">
-                      <path fill="#FFFFFF" d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.907h.004c4.368 0 7.926-3.558 7.93-7.93a7.9 7.9 0 0 0-2.327-5.643zM11.75 11.517a2.23 2.23 0 0 1-1.07.513c-.273.069-.51.137-.8.02-.284-.117-.508-.228-1.002-.556-1.032-.687-1.782-1.758-2.222-2.47-.07-.113-.098-.2-.04-.27.054-.067.118-.148.18-.22.062-.072.079-.123.117-.205.037-.082.02-.153-.01-.225-.03-.072-.27-.655-.37-.899-.098-.238-.198-.205-.27-.205a8.3 8.3 0 0 0-.414-.008c-.146 0-.383.056-.583.275-.2.22-.765.748-.765 1.823s.783 2.115.892 2.262c.11.147 1.54 2.352 3.732 3.298.52.224.927.359 1.243.46.523.167.997.143 1.374.088.42-.062 1.777-.726 2.027-1.428.25-.701.25-1.303.175-1.428-.075-.126-.27-.197-.57-.346z"/>
+                      <path fill="#FFFFFF" d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.907h.004c4.368 0 7.926-3.558 7.93-7.93a7.9 7.9 0 0 0-2.327-5.643zM11.75 11.517a2.23 2.23 0 0 1-1.07.513c-.273.069-.51.137-.8.02-.284-.117-.508-.228-1.002-.556-1.032-.687-1.782-1.758-2.222-2.47-.07-.113-.098-.2-.04-.27.054-.067.118-.148.18-.22.062-.072.079-.123.117-.205.037-.082.02-.153-.01-.225-.03-.072-.27-.655-.37-.899-.098-.238-.198-.205-.27-.205a8.3 8.3 0 0 0-.414-.008c-.146 0-.383.056-.583.275-.2.22-.765.748-.765 1.823s.783 2.115.892 2.262c.11.147 1.54 2.352 3.732 3.298.52.224.927.359 1.243.46.523.167.997.143 1.374.088.42-.062 1.777-.726 2.027-1.428.25-.701.25-1.303.175-1.428-.075-.126-.27-.197-.57-.346z" />
                     </g>
                   </svg>
                   Inquire All via WhatsApp
@@ -1262,7 +1326,7 @@ export default function CatalogPage() {
       {toastMessage && (
         <div className="toast-message" id="toast-notification">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="var(--color-gold-bright)" viewBox="0 0 24 24">
-            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
           </svg>
           {toastMessage}
         </div>
