@@ -636,9 +636,32 @@ export default function AdminPage() {
             <h1 className="admin-title">Catalog Control</h1>
             <p className="admin-subtitle">Add new Chaniya Cholis or manage current listings in the database.</p>
           </div>
-          <a href="/" className="btn-details" style={{ textDecoration: 'none', border: '1px solid var(--color-gold)' }}>
-            &larr; View Live Shop
-          </a>
+          <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <a
+              href="/catalog.pdf"
+              download="Magic_Threads_Product_Catalog.pdf"
+              target="_blank"
+              className="btn-details"
+              style={{
+                textDecoration: 'none',
+                background: 'linear-gradient(135deg, #C59B27 0%, #f39c12 100%)',
+                color: '#5c061c',
+                fontWeight: '700',
+                border: 'none',
+                boxShadow: '0 2px 10px rgba(197, 155, 39, 0.35)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.65rem 1.1rem',
+                borderRadius: '8px'
+              }}
+            >
+              📄 Download PDF Catalog
+            </a>
+            <a href="/" className="btn-details" style={{ textDecoration: 'none', border: '1px solid var(--color-gold)' }}>
+              &larr; View Live Shop
+            </a>
+          </div>
         </div>
 
         {/* STATS SECTION */}
@@ -717,29 +740,33 @@ export default function AdminPage() {
                   className={`admin-tab-btn ${activeFormTab === 'basic' ? 'active' : ''}`}
                   onClick={() => setActiveFormTab('basic')}
                 >
-                  General Info
+                  Basic Info
                 </button>
-                <button
-                  type="button"
-                  className={`admin-tab-btn ${activeFormTab === 'lehenga' ? 'active' : ''}`}
-                  onClick={() => setActiveFormTab('lehenga')}
-                >
-                  Lehenga Spec
-                </button>
-                <button
-                  type="button"
-                  className={`admin-tab-btn ${activeFormTab === 'blouse' ? 'active' : ''}`}
-                  onClick={() => setActiveFormTab('blouse')}
-                >
-                  Blouse Spec
-                </button>
-                <button
-                  type="button"
-                  className={`admin-tab-btn ${activeFormTab === 'dupatta' ? 'active' : ''}`}
-                  onClick={() => setActiveFormTab('dupatta')}
-                >
-                  Dupatta Spec
-                </button>
+                {itemCategory === 'chaniya-choli' && (
+                  <>
+                    <button
+                      type="button"
+                      className={`admin-tab-btn ${activeFormTab === 'lehenga' ? 'active' : ''}`}
+                      onClick={() => setActiveFormTab('lehenga')}
+                    >
+                      Lehenga Spec
+                    </button>
+                    <button
+                      type="button"
+                      className={`admin-tab-btn ${activeFormTab === 'blouse' ? 'active' : ''}`}
+                      onClick={() => setActiveFormTab('blouse')}
+                    >
+                      Blouse Spec
+                    </button>
+                    <button
+                      type="button"
+                      className={`admin-tab-btn ${activeFormTab === 'dupatta' ? 'active' : ''}`}
+                      onClick={() => setActiveFormTab('dupatta')}
+                    >
+                      Dupatta Spec
+                    </button>
+                  </>
+                )}
                 <button
                   type="button"
                   className={`admin-tab-btn ${activeFormTab === 'extra' ? 'active' : ''}`}
@@ -845,64 +872,103 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                    <div className="form-group">
-                      <label className="form-label">Lehenga Ghera (Summary Flare)</label>
-                      <input
-                        type="text"
-                        className="form-input"
-                        placeholder="e.g. 6.5 Meters"
-                        value={itemFlare}
-                        onChange={(e) => setItemFlare(e.target.value)}
-                      />
-                    </div>
-                    
-                    <div className="form-group">
-                      <label className="form-label">Blouse Fitting (Summary Details)</label>
-                      <input
-                        type="text"
-                        className="form-input"
-                        placeholder="e.g. Stitched Size 38-42"
-                        value={itemBlouse}
-                        onChange={(e) => setItemBlouse(e.target.value)}
-                      />
-                    </div>
-                  </div>
+                  {itemCategory === 'chaniya-choli' ? (
+                    <>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div className="form-group">
+                          <label className="form-label">Lehenga Ghera (Summary Flare)</label>
+                          <input
+                            type="text"
+                            className="form-input"
+                            placeholder="e.g. 6.5 Meters"
+                            value={itemFlare}
+                            onChange={(e) => setItemFlare(e.target.value)}
+                          />
+                        </div>
+                        
+                        <div className="form-group">
+                          <label className="form-label">Blouse Fitting (Summary Details)</label>
+                          <input
+                            type="text"
+                            className="form-input"
+                            placeholder="e.g. Stitched Size 38-42"
+                            value={itemBlouse}
+                            onChange={(e) => setItemBlouse(e.target.value)}
+                          />
+                        </div>
+                      </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
-                    <div className="form-group">
-                      <label className="form-label">Dupatta Detail (Summary)</label>
-                      <input
-                        type="text"
-                        className="form-input"
-                        placeholder="e.g. 2.3 Mtrs Organza"
-                        value={itemDupatta}
-                        onChange={(e) => setItemDupatta(e.target.value)}
-                      />
-                    </div>
-                    
-                    <div className="form-group">
-                      <label className="form-label">Product Tag (Promo)</label>
-                      <input
-                        type="text"
-                        className="form-input"
-                        placeholder="e.g. New Arrival"
-                        value={itemTag}
-                        onChange={(e) => setItemTag(e.target.value)}
-                      />
-                    </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                        <div className="form-group">
+                          <label className="form-label">Dupatta Detail (Summary)</label>
+                          <input
+                            type="text"
+                            className="form-input"
+                            placeholder="e.g. 2.3 Mtrs Organza"
+                            value={itemDupatta}
+                            onChange={(e) => setItemDupatta(e.target.value)}
+                          />
+                        </div>
+                        
+                        <div className="form-group">
+                          <label className="form-label">Product Tag (Promo)</label>
+                          <input
+                            type="text"
+                            className="form-input"
+                            placeholder="e.g. New Arrival"
+                            value={itemTag}
+                            onChange={(e) => setItemTag(e.target.value)}
+                          />
+                        </div>
 
-                    <div className="form-group">
-                      <label className="form-label">Total Weight</label>
-                      <input
-                        type="text"
-                        className="form-input"
-                        placeholder="e.g. Approx. 2.0 kg"
-                        value={itemWeight}
-                        onChange={(e) => setItemWeight(e.target.value)}
-                      />
+                        <div className="form-group">
+                          <label className="form-label">Total Weight</label>
+                          <input
+                            type="text"
+                            className="form-input"
+                            placeholder="e.g. Approx. 2.0 kg"
+                            value={itemWeight}
+                            onChange={(e) => setItemWeight(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                      <div className="form-group">
+                        <label className="form-label">Dimensions / Size</label>
+                        <input
+                          type="text"
+                          className="form-input"
+                          placeholder="e.g. 36 x 24 inches"
+                          value={itemFlare}
+                          onChange={(e) => setItemFlare(e.target.value)}
+                        />
+                      </div>
+                      
+                      <div className="form-group">
+                        <label className="form-label">Product Tag (Promo)</label>
+                        <input
+                          type="text"
+                          className="form-input"
+                          placeholder="e.g. Best Seller"
+                          value={itemTag}
+                          onChange={(e) => setItemTag(e.target.value)}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label className="form-label">Total Weight</label>
+                        <input
+                          type="text"
+                          className="form-input"
+                          placeholder="e.g. Approx. 500g"
+                          value={itemWeight}
+                          onChange={(e) => setItemWeight(e.target.value)}
+                        />
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="form-group">
                     <label className="form-label">Stock Availability *</label>

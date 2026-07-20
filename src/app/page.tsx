@@ -1047,27 +1047,55 @@ export default function CatalogPage() {
                   /* Fallback to simple Specs Table for products without detailed fields */
                   <table className="specs-table">
                     <tbody>
-                      <tr>
-                        <td className="spec-label">Fabric / Material</td>
-                        <td className="spec-val">{selectedProduct.fabric}</td>
-                      </tr>
-                      <tr>
-                        <td className="spec-label">Embroidery & Work</td>
-                        <td className="spec-val">{selectedProduct.workType}</td>
-                      </tr>
-                      <tr>
-                        <td className="spec-label">Lehenga Ghera (Flare)</td>
-                        <td className="spec-val">{selectedProduct.flare}</td>
-                      </tr>
-                      <tr>
-                        <td className="spec-label">Blouse Style</td>
-                        <td className="spec-val">{selectedProduct.blouse}</td>
-                      </tr>
-                      <tr>
-                        <td className="spec-label">Dupatta Detail</td>
-                        <td className="spec-val">{selectedProduct.dupatta}</td>
-                      </tr>
-                      {selectedProduct.weight && (
+                      {selectedProduct.fabric && selectedProduct.fabric !== 'N/A' && (
+                        <tr>
+                          <td className="spec-label">Fabric / Material</td>
+                          <td className="spec-val">{selectedProduct.fabric}</td>
+                        </tr>
+                      )}
+                      {selectedProduct.workType && selectedProduct.workType !== 'N/A' && (
+                        <tr>
+                          <td className="spec-label">Embroidery & Work</td>
+                          <td className="spec-val">{selectedProduct.workType}</td>
+                        </tr>
+                      )}
+                      {selectedProduct.category === 'chaniya-choli' || !selectedProduct.category ? (
+                        <>
+                          {selectedProduct.flare && selectedProduct.flare !== 'N/A' && !selectedProduct.flare.startsWith('N/A') && (
+                            <tr>
+                              <td className="spec-label">Lehenga Ghera (Flare)</td>
+                              <td className="spec-val">{selectedProduct.flare}</td>
+                            </tr>
+                          )}
+                          {selectedProduct.blouse && selectedProduct.blouse !== 'N/A' && !selectedProduct.blouse.startsWith('N/A') && (
+                            <tr>
+                              <td className="spec-label">Blouse Style</td>
+                              <td className="spec-val">{selectedProduct.blouse}</td>
+                            </tr>
+                          )}
+                          {selectedProduct.dupatta && selectedProduct.dupatta !== 'N/A' && !selectedProduct.dupatta.startsWith('N/A') && (
+                            <tr>
+                              <td className="spec-label">Dupatta Detail</td>
+                              <td className="spec-val">{selectedProduct.dupatta}</td>
+                            </tr>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          {/* Home Decor & Cushion Covers Specs */}
+                          {selectedProduct.flare && (
+                            <tr>
+                              <td className="spec-label">Dimensions / Size</td>
+                              <td className="spec-val">
+                                {selectedProduct.flare.includes('(') && selectedProduct.flare.includes(')')
+                                  ? selectedProduct.flare.split('(')[1].split(')')[0]
+                                  : selectedProduct.flare}
+                              </td>
+                            </tr>
+                          )}
+                        </>
+                      )}
+                      {selectedProduct.weight && selectedProduct.weight !== 'N/A' && (
                         <tr>
                           <td className="spec-label">Product Weight</td>
                           <td className="spec-val">{selectedProduct.weight}</td>
