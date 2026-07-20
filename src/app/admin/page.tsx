@@ -37,6 +37,7 @@ export default function AdminPage() {
   const [itemDupatta, setItemDupatta] = useState('');
   const [itemTag, setItemTag] = useState('');
   const [itemWeight, setItemWeight] = useState('');
+  const [itemIsAvailable, setItemIsAvailable] = useState<boolean>(true);
   const [itemImage, setItemImage] = useState('/images/navratri.png'); // Default preset
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
@@ -200,6 +201,7 @@ export default function AdminPage() {
     setItemDupatta(product.dupatta || '');
     setItemTag(product.tag || '');
     setItemWeight(product.weight || '');
+    setItemIsAvailable(product.isAvailable !== false);
     setItemImage(product.image);
     setItemImages(product.images || []);
     setItemVideo(product.video || '');
@@ -269,6 +271,7 @@ export default function AdminPage() {
     setItemDupatta('');
     setItemTag('');
     setItemWeight('');
+    setItemIsAvailable(true);
     setItemImage('/images/navratri.png');
     setItemImages([]);
     setItemVideo('');
@@ -424,7 +427,7 @@ export default function AdminPage() {
         flare: itemFlare.trim() || "5.5 Meters",
         blouse: itemBlouse.trim() || "Semi-stitched",
         dupatta: itemDupatta.trim() || "2.25 Meters",
-        isAvailable: true,
+        isAvailable: itemIsAvailable,
         tag: itemTag.trim() || undefined,
         weight: itemWeight.trim() || undefined,
         lehengaDetails: hasAnyValue(lehengaDetailsObj) ? lehengaDetailsObj : undefined,
@@ -525,6 +528,22 @@ export default function AdminPage() {
       setFormMessage(err.message || "Failed to save product.");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleToggleAvailability = async (product: Product) => {
+    const newStatus = product.isAvailable === false ? true : false;
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update({ isAvailable: newStatus })
+        .eq('id', product.id)
+        .async();
+
+      if (error) throw error;
+      fetchDashboardData();
+    } catch (err: any) {
+      alert("Failed to update stock status: " + (err.message || "Unknown error"));
     }
   };
 
@@ -643,10 +662,38 @@ export default function AdminPage() {
           
           {/* 1. ADD NEW ITEM FORM */}
           <section className="admin-form-panel">
-            <h2 className="admin-panel-title">{isEditMode ? `Edit Product: ${itemName}` : "Add New Chaniya Choli"}</h2>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: '-0.5rem', marginBottom: '1rem' }}>
-              {isEditMode ? "Modify details of this existing product listing." : "Fill out the details. Items will be appended to the catalog instantly."}
-            </p>
+            <div style={{ marginBottom: '1.2rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <h2 className="admin-panel-title" style={{ margin: 0 }}>
+                  {isEditMode ? "Edit Product" : "Add New Chaniya Choli"}
+                </h2>
+
+                <div className="admin-header-actions">
+                  <button 
+                    type="submit" 
+                    form="admin-product-form"
+                    className="btn-admin-header-save"
+                    disabled={submitting}
+                  >
+                    {submitting ? "Saving..." : isEditMode ? "Save Changes" : "Add Product"}
+                  </button>
+                  {isEditMode && (
+                    <button 
+                      type="button" 
+                      className="btn-admin-header-cancel"
+                      onClick={handleCancelEdit}
+                      disabled={submitting}
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: '0.4rem', margin: 0, wordBreak: 'break-word' }}>
+                {isEditMode ? `Editing: ${itemName}` : "Fill out details. Items will be appended to catalog."}
+              </p>
+            </div>
 
             {formMessage && (
               <div style={{
@@ -662,7 +709,7 @@ export default function AdminPage() {
               </div>
             )}
 
-            <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+            <form id="admin-product-form" onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
               {/* Form Section Tabs */}
               <div className="admin-form-tabs">
                 <button
@@ -855,6 +902,18 @@ export default function AdminPage() {
                         onChange={(e) => setItemWeight(e.target.value)}
                       />
                     </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Stock Availability *</label>
+                    <select
+                      className="form-select"
+                      value={itemIsAvailable ? 'true' : 'false'}
+                      onChange={(e) => setItemIsAvailable(e.target.value === 'true')}
+                    >
+                      <option value="true">Available (In Stock)</option>
+                      <option value="false">Sold Out (Unavailable)</option>
+                    </select>
                   </div>
 
                   <div className="form-group">
@@ -1398,28 +1457,6 @@ export default function AdminPage() {
                   </div>
                 </div>
               )}
-
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-                <button 
-                  type="submit" 
-                  className="btn-submit-inquiry btn-admin-primary"
-                  style={{ flex: 1 }}
-                  disabled={submitting}
-                >
-                  {submitting ? "Saving..." : isEditMode ? "Update Product" : "Add to Live Database"}
-                </button>
-                {isEditMode && (
-                  <button 
-                    type="button" 
-                    className="btn-admin-action"
-                    style={{ flex: 1, padding: '0.75rem' }}
-                    onClick={handleCancelEdit}
-                    disabled={submitting}
-                  >
-                    Cancel Edit
-                  </button>
-                )}
-              </div>
             </form>
           </section>
 
@@ -1460,6 +1497,11 @@ export default function AdminPage() {
                     </div>
 
                     <div className="admin-item-actions">
+                      <span 
+                        className={`admin-status-badge ${product.isAvailable !== false ? 'status-badge-available' : 'status-badge-sold'}`}
+                      >
+                        {product.isAvailable !== false ? '✓ Available' : '✕ Sold Out'}
+                      </span>
                       <button 
                         className="btn-admin-action btn-admin-edit"
                         onClick={() => handleEditClick(product)}

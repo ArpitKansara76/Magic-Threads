@@ -297,6 +297,19 @@ export const mockSupabase = {
 
                   return { error: null };
                 }
+
+                if (table === 'products') {
+                  const dbProducts = getLocalStorage<Product[]>('mock_db_products', initialProducts);
+                  const updated = dbProducts.map(p => {
+                    if (p[field as keyof Product] === value) {
+                      return { ...p, ...fieldsToUpdate };
+                    }
+                    return p;
+                  });
+                  setLocalStorage('mock_db_products', updated);
+                  return { error: null };
+                }
+
                 return { error: { message: 'Invalid operation' } };
               }
             };

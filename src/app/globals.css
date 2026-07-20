@@ -961,8 +961,8 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   gap: 1rem;
   padding: 1rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(212, 175, 55, 0.1);
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.25);
   border-radius: 12px;
   margin-bottom: 0.5rem;
 }
@@ -990,13 +990,14 @@ h1, h2, h3, h4, h5, h6 {
 
 .product-summary-name {
   font-size: 0.95rem;
-  font-weight: 600;
-  color: white;
+  font-weight: 700;
+  color: #2c1a0e;
 }
 
 .product-summary-price {
-  font-size: 0.85rem;
-  color: var(--color-gold-bright);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #b8860b;
 }
 
 .btn-submit-inquiry {
@@ -2385,6 +2386,233 @@ h1, h2, h3, h4, h5, h6 {
     padding: 0.45rem 0.2rem !important;
   }
 }
+
+/* --- Product Stock Availability Badges & Overlays --- */
+/* Top-Right Cross/Diagonal Corner Ribbon */
+.corner-ribbon-wrapper {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 110px;
+  height: 110px;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.corner-ribbon {
+  position: absolute;
+  top: 22px;
+  right: -34px;
+  width: 140px;
+  padding: 0.35rem 0;
+  transform: rotate(45deg);
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  display: block;
+  z-index: 11;
+}
+
+.corner-ribbon.status-sold {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.corner-ribbon.status-available {
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.corner-ribbon.status-coming-soon {
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.product-status-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 30px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  z-index: 5;
+  backdrop-filter: blur(8px);
+}
+
+.product-status-badge .status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.product-status-badge.status-available {
+  background: rgba(46, 204, 113, 0.18);
+  border: 1px solid rgba(46, 204, 113, 0.6);
+  color: #27ae60;
+  box-shadow: 0 0 10px rgba(46, 204, 113, 0.25);
+}
+
+.product-status-badge.status-available .status-dot {
+  background-color: #2ecc71;
+  box-shadow: 0 0 6px #2ecc71;
+}
+
+.product-status-badge.status-sold {
+  background: rgba(231, 76, 60, 0.2);
+  border: 1px solid rgba(231, 76, 60, 0.7);
+  color: #e74c3c;
+  box-shadow: 0 0 10px rgba(231, 76, 60, 0.3);
+}
+
+.product-status-badge.status-sold .status-dot {
+  background-color: #e74c3c;
+  box-shadow: 0 0 6px #e74c3c;
+}
+
+.product-status-badge.status-coming-soon {
+  background: rgba(241, 196, 15, 0.2);
+  border: 1px solid rgba(241, 196, 15, 0.6);
+  color: #d35400;
+}
+
+.product-status-badge.status-coming-soon .status-dot {
+  background-color: #f1c40f;
+}
+
+.sold-out-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 8, 12, 0.68);
+  backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 4;
+}
+
+.sold-out-overlay span {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: #ffffff;
+  padding: 0.55rem 1.4rem;
+  border-radius: 30px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+  transform: rotate(-5deg);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-sold-out-disabled {
+  background: rgba(231, 76, 60, 0.12);
+  border: 1px solid rgba(231, 76, 60, 0.4);
+  color: #e74c3c;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: not-allowed;
+  font-family: var(--font-sans);
+  text-align: center;
+}
+
+/* Admin Quick Status Badges (Display Only) */
+.admin-status-badge {
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  font-family: var(--font-sans);
+}
+
+.status-badge-available {
+  background: rgba(46, 204, 113, 0.15);
+  color: #27ae60;
+  border: 1px solid rgba(46, 204, 113, 0.5);
+}
+
+.status-badge-sold {
+  background: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.5);
+}
+
+/* Header Action Buttons - Perfectly Inline */
+.admin-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+.btn-admin-header-save {
+  background: var(--color-pink-gradient);
+  color: white;
+  padding: 0.5rem 1.25rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+  cursor: pointer;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-speed);
+  box-shadow: 0 4px 12px rgba(125, 31, 26, 0.25);
+  line-height: 1;
+  font-family: var(--font-sans);
+}
+
+.btn-admin-header-save:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(125, 31, 26, 0.35);
+}
+
+.btn-admin-header-cancel {
+  background: transparent;
+  color: #e74c3c;
+  padding: 0.5rem 1.1rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: 1px solid rgba(231, 76, 60, 0.6);
+  cursor: pointer;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-speed);
+  line-height: 1;
+  font-family: var(--font-sans);
+}
+
+.btn-admin-header-cancel:hover {
+  background: rgba(231, 76, 60, 0.1);
+  border-color: #e74c3c;
+}
+
 
 
 
