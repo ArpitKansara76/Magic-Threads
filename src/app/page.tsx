@@ -358,10 +358,6 @@ export default function CatalogPage() {
 
         {/* Hero Glassmorphism Overlay Content */}
         <div className="hero-content">
-          <div className="hero-3d-badge">
-            <span className="hero-3d-badge-dot"></span>
-            3D Garment Visualizer Live
-          </div>
           <div className="hero-tagline">Exquisite Traditional Wear</div>
           <h1 className="hero-title">
             Celebrate Festivals in <span className="gold-gradient-text">Nine Colors of Elegance</span>
