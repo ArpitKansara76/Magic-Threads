@@ -4,6 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import { products as initialProducts, Product } from '../data/products';
 import { supabase } from '../utils/supabase/client';
+import { Hero3DCanvas } from '../components/Hero3DCanvas';
 
 // Configurable seller phone number (with country code, e.g., +91 for India)
 const SELLER_WHATSAPP_NUMBER = '918980082662';
@@ -161,6 +162,7 @@ export default function CatalogPage() {
   };
 
   const openProductDetails = (product: Product) => {
+    if (product.tag?.toLowerCase() === 'coming soon') return;
     setSelectedProduct(product);
     setActiveDetailTab('details');
     setActiveSpecSubTab('lehenga');
@@ -349,23 +351,32 @@ export default function CatalogPage() {
         </div>
       </header>
 
-      {/* HERO SECTION */}
+      {/* HERO SECTION WITH 3D MANNEQUIN BACKGROUND (SHARPLINK STYLE) */}
       <section className="hero">
-        <div className="hero-background-mandala" aria-hidden="true"></div>
+        {/* Three.js 3D Girl Canvas Background */}
+        <Hero3DCanvas />
+
+        {/* Hero Glassmorphism Overlay Content */}
         <div className="hero-content">
+          <div className="hero-3d-badge">
+            <span className="hero-3d-badge-dot"></span>
+            3D Garment Visualizer Live
+          </div>
           <div className="hero-tagline">Exquisite Traditional Wear</div>
           <h1 className="hero-title">
             Celebrate Festivals in <span className="gold-gradient-text">Nine Colors of Elegance</span>
           </h1>
           <p className="hero-description">
-            Explore premium handcrafted Chaniya Cholis, traditional Home Decor, and ethnic Cushion Covers. Choose your favorites and inquire instantly on WhatsApp.
+            Experience our 3D Chaniya Choli showcase. Explore handcrafted traditional Gujarati attire, home decor & cushion covers with instant WhatsApp inquiry.
           </p>
-          <a href="#catalog" className="hero-cta-btn" id="explore-collection-btn">
-            Explore Collection
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
-            </svg>
-          </a>
+          <div className="hero-cta-group">
+            <a href="#catalog" className="hero-cta-btn" id="explore-collection-btn">
+              Explore Collection
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
+              </svg>
+            </a>
+          </div>
         </div>
       </section>
 
@@ -430,27 +441,29 @@ export default function CatalogPage() {
         {/* Product Grid */}
         <section className="product-grid">
           {filteredProducts.map((product) => {
-            const isSoldOut = product.isAvailable === false || product.tag?.toLowerCase() === 'sold' || product.tag?.toLowerCase() === 'sold out';
             const isComingSoon = product.tag?.toLowerCase() === 'coming soon';
+            const isSoldOut = !isComingSoon && (product.isAvailable === false || product.tag?.toLowerCase() === 'sold' || product.tag?.toLowerCase() === 'sold out');
             const isUnavailable = isSoldOut || isComingSoon;
 
             return (
               <article className={`product-card ${isSoldOut ? 'sold-out' : isComingSoon ? 'coming-soon' : ''}`} key={product.id}>
-                {product.tag && (
+                {product.tag && !isComingSoon && (
                   <span className="product-tag">{product.tag}</span>
                 )}
 
                 <div
                   className="product-image-container"
-                  onClick={() => openProductDetails(product)}
-                  style={{ cursor: 'pointer' }}
+                  onClick={() => !isComingSoon && openProductDetails(product)}
+                  style={{ cursor: isComingSoon ? 'default' : 'pointer' }}
                 >
                   {/* Top-Right Diagonal Cross Corner Ribbon */}
-                  <div className="corner-ribbon-wrapper">
-                    <span className={`corner-ribbon ${isSoldOut ? 'status-sold' : isComingSoon ? 'status-coming-soon' : 'status-available'}`}>
-                      {isSoldOut ? 'SOLD' : isComingSoon ? 'COMING SOON' : 'AVAILABLE'}
-                    </span>
-                  </div>
+                  {!isComingSoon && (
+                    <div className="corner-ribbon-wrapper">
+                      <span className={`corner-ribbon ${isSoldOut ? 'status-sold' : 'status-available'}`}>
+                        {isSoldOut ? 'SOLD' : 'AVAILABLE'}
+                      </span>
+                    </div>
+                  )}
 
                   <Image
                     src={product.image}
@@ -464,7 +477,7 @@ export default function CatalogPage() {
                       <span>SOLD OUT</span>
                     </div>
                   )}
-                  {isComingSoon && !isSoldOut && (
+                  {isComingSoon && (
                     <div className="coming-soon-overlay">
                       <span>Coming Soon</span>
                     </div>
@@ -475,8 +488,8 @@ export default function CatalogPage() {
                   <span className="product-category">{formatCategory(product.category)}</span>
                   <h3
                     className="product-name"
-                    onClick={() => openProductDetails(product)}
-                    style={{ cursor: 'pointer' }}
+                    onClick={() => !isComingSoon && openProductDetails(product)}
+                    style={{ cursor: isComingSoon ? 'default' : 'pointer' }}
                   >
                     {product.name}
                   </h3>
@@ -492,7 +505,9 @@ export default function CatalogPage() {
                     <button
                       className="btn-details"
                       id={`btn-details-${product.id}`}
-                      onClick={() => openProductDetails(product)}
+                      onClick={() => !isComingSoon && openProductDetails(product)}
+                      disabled={isComingSoon}
+                      style={isComingSoon ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
                     >
                       View Specs
                     </button>
@@ -702,10 +717,16 @@ export default function CatalogPage() {
                 <div className="modal-title-row">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
                     <span className="product-category">{formatCategory(selectedProduct.category)}</span>
-                    <span className={`product-status-badge ${selectedProduct.isAvailable === false || selectedProduct.tag?.toLowerCase() === 'sold' || selectedProduct.tag?.toLowerCase() === 'sold out' ? 'status-sold' : selectedProduct.tag?.toLowerCase() === 'coming soon' ? 'status-coming-soon' : 'status-available'}`} style={{ position: 'static' }}>
-                      <span className="status-dot"></span>
-                      {selectedProduct.isAvailable === false || selectedProduct.tag?.toLowerCase() === 'sold' || selectedProduct.tag?.toLowerCase() === 'sold out' ? 'SOLD OUT' : selectedProduct.tag?.toLowerCase() === 'coming soon' ? 'COMING SOON' : 'AVAILABLE'}
-                    </span>
+                    {(() => {
+                      const isModalComingSoon = selectedProduct.tag?.toLowerCase() === 'coming soon';
+                      const isModalSoldOut = !isModalComingSoon && (selectedProduct.isAvailable === false || selectedProduct.tag?.toLowerCase() === 'sold' || selectedProduct.tag?.toLowerCase() === 'sold out');
+                      return (
+                        <span className={`product-status-badge ${isModalSoldOut ? 'status-sold' : isModalComingSoon ? 'status-coming-soon' : 'status-available'}`} style={{ position: 'static' }}>
+                          <span className="status-dot"></span>
+                          {isModalSoldOut ? 'SOLD OUT' : isModalComingSoon ? 'COMING SOON' : 'AVAILABLE'}
+                        </span>
+                      );
+                    })()}
                   </div>
                   <h2 className="modal-title">{selectedProduct.name}</h2>
                 </div>
@@ -1108,56 +1129,63 @@ export default function CatalogPage() {
 
 
                 <div style={{ display: 'flex', gap: '1rem', marginTop: 'auto', width: '100%' }}>
-                  {selectedProduct && selectedProduct.tag?.toLowerCase() === 'coming soon' ? (
-                    <button
-                      className="btn-coming-soon-disabled"
-                      disabled
-                      style={{ width: '100%', padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    >
-                      Coming Soon
-                    </button>
-                  ) : (
-                    <>
-                      <button
-                        className="btn-inquire"
-                        style={{ width: (selectedProduct && (selectedProduct.isAvailable === false || selectedProduct.tag?.toLowerCase() === 'sold' || selectedProduct.tag?.toLowerCase() === 'sold out')) ? '100%' : 'auto', flexGrow: 2, padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
-                        id="modal-inquire-now-btn"
-                        onClick={() => {
-                          setInquiryProduct(selectedProduct);
-                          setIsBulkInquiry(false);
-                          setShowInquiryModal(true);
-                          closeProductDetails();
-                        }}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
-                          <rect width="24" height="24" rx="6" fill="#25D366" />
-                          <g transform="translate(4, 4)">
-                            <path fill="#FFFFFF" d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.907h.004c4.368 0 7.926-3.558 7.93-7.93a7.9 7.9 0 0 0-2.327-5.643zM11.75 11.517a2.23 2.23 0 0 1-1.07.513c-.273.069-.51.137-.8.02-.284-.117-.508-.228-1.002-.556-1.032-.687-1.782-1.758-2.222-2.47-.07-.113-.098-.2-.04-.27.054-.067.118-.148.18-.22.062-.072.079-.123.117-.205.037-.082.02-.153-.01-.225-.03-.072-.27-.655-.37-.899-.098-.238-.198-.205-.27-.205a8.3 8.3 0 0 0-.414-.008c-.146 0-.383.056-.583.275-.2.22-.765.748-.765 1.823s.783 2.115.892 2.262c.11.147 1.54 2.352 3.732 3.298.52.224.927.359 1.243.46.523.167.997.143 1.374.088.42-.062 1.777-.726 2.027-1.428.25-.701.25-1.303.175-1.428-.075-.126-.27-.197-.57-.346z" />
-                          </g>
-                        </svg>
-                        {selectedProduct && (selectedProduct.isAvailable === false || selectedProduct.tag?.toLowerCase() === 'sold' || selectedProduct.tag?.toLowerCase() === 'sold out')
-                          ? 'Inquire for Restock / Custom Order'
-                          : 'Inquire on WhatsApp'}
-                      </button>
+                  {(() => {
+                    const isModalComingSoon = selectedProduct && selectedProduct.tag?.toLowerCase() === 'coming soon';
+                    const isModalSoldOut = !isModalComingSoon && selectedProduct && (selectedProduct.isAvailable === false || selectedProduct.tag?.toLowerCase() === 'sold' || selectedProduct.tag?.toLowerCase() === 'sold out');
 
-                      {selectedProduct && selectedProduct.isAvailable !== false && selectedProduct.tag?.toLowerCase() !== 'sold' && selectedProduct.tag?.toLowerCase() !== 'sold out' && (
+                    if (isModalComingSoon) {
+                      return (
                         <button
-                          className="btn-add-bag"
-                          style={{ flexGrow: 1, padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
-                          id="modal-add-bag-btn"
-                          onClick={(e) => {
-                            handleAddToBag(selectedProduct, e);
+                          className="btn-coming-soon-disabled"
+                          disabled
+                          style={{ width: '100%', padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                          Coming Soon
+                        </button>
+                      );
+                    }
+
+                    return (
+                      <>
+                        <button
+                          className="btn-inquire"
+                          style={{ width: isModalSoldOut ? '100%' : 'auto', flexGrow: 2, padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                          id="modal-inquire-now-btn"
+                          onClick={() => {
+                            setInquiryProduct(selectedProduct);
+                            setIsBulkInquiry(false);
+                            setShowInquiryModal(true);
                             closeProductDetails();
                           }}
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
+                          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
+                            <rect width="24" height="24" rx="6" fill="#25D366" />
+                            <g transform="translate(4, 4)">
+                              <path fill="#FFFFFF" d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.907h.004c4.368 0 7.926-3.558 7.93-7.93a7.9 7.9 0 0 0-2.327-5.643zM11.75 11.517a2.23 2.23 0 0 1-1.07.513c-.273.069-.51.137-.8.02-.284-.117-.508-.228-1.002-.556-1.032-.687-1.782-1.758-2.222-2.47-.07-.113-.098-.2-.04-.27.054-.067.118-.148.18-.22.062-.072.079-.123.117-.205.037-.082.02-.153-.01-.225-.03-.072-.27-.655-.37-.899-.098-.238-.198-.205-.27-.205a8.3 8.3 0 0 0-.414-.008c-.146 0-.383.056-.583.275-.2.22-.765.748-.765 1.823s.783 2.115.892 2.262c.11.147 1.54 2.352 3.732 3.298.52.224.927.359 1.243.46.523.167.997.143 1.374.088.42-.062 1.777-.726 2.027-1.428.25-.701.25-1.303.175-1.428-.075-.126-.27-.197-.57-.346z" />
+                            </g>
                           </svg>
-                          Add to Bag
+                          {isModalSoldOut ? 'Inquire for Restock / Custom Order' : 'Inquire on WhatsApp'}
                         </button>
-                      )}
-                    </>
-                  )}
+
+                        {!isModalSoldOut && (
+                          <button
+                            className="btn-add-bag"
+                            style={{ flexGrow: 1, padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                            id="modal-add-bag-btn"
+                            onClick={(e) => {
+                              handleAddToBag(selectedProduct, e);
+                              closeProductDetails();
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
+                            </svg>
+                            Add to Bag
+                          </button>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             </div>

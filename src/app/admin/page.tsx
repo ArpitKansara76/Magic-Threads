@@ -1564,9 +1564,9 @@ export default function AdminPage() {
 
                     <div className="admin-item-actions">
                       <span 
-                        className={`admin-status-badge ${product.isAvailable !== false ? 'status-badge-available' : 'status-badge-sold'}`}
+                        className={`admin-status-badge ${product.tag?.toLowerCase() === 'coming soon' ? 'status-badge-coming-soon' : product.isAvailable !== false ? 'status-badge-available' : 'status-badge-sold'}`}
                       >
-                        {product.isAvailable !== false ? '✓ Available' : '✕ Sold Out'}
+                        {product.tag?.toLowerCase() === 'coming soon' ? '⏳ Coming Soon' : product.isAvailable !== false ? '✓ Available' : '✕ Sold Out'}
                       </span>
                       <button 
                         className="btn-admin-action btn-admin-edit"
