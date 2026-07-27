@@ -468,11 +468,6 @@ export default function CatalogPage() {
                     height={350}
                     className="product-image"
                   />
-                  {isSoldOut && (
-                    <div className="sold-out-overlay">
-                      <span>SOLD OUT</span>
-                    </div>
-                  )}
                   {isComingSoon && (
                     <div className="coming-soon-overlay">
                       <span>Coming Soon</span>
