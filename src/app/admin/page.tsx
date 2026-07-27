@@ -41,10 +41,10 @@ export default function AdminPage() {
   const [itemImage, setItemImage] = useState('/images/navratri.png'); // Default preset
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
-  const [itemImages, setItemImages] = useState<string[]>([]);
   const [itemVideo, setItemVideo] = useState<string>('');
-  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
-  const [galleryPreviewUrls, setGalleryPreviewUrls] = useState<string[]>([]);
+  const [galleryItems, setGalleryItems] = useState<{ id: string; type: 'existing' | 'new'; url: string; file?: File }[]>([]);
+  const [draggedGalleryIndex, setDraggedGalleryIndex] = useState<number | null>(null);
+  const [previewModalUrl, setPreviewModalUrl] = useState<string | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
   const [itemDescription, setItemDescription] = useState('');
@@ -95,12 +95,52 @@ export default function AdminPage() {
 
   const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files) {
+    if (files && files.length > 0) {
       const filesArray = Array.from(files);
-      setGalleryFiles(filesArray);
-      const urls = filesArray.map(file => URL.createObjectURL(file));
-      setGalleryPreviewUrls(urls);
+      const newItems = filesArray.map((file, idx) => ({
+        id: `new-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 7)}`,
+        type: 'new' as const,
+        url: URL.createObjectURL(file),
+        file
+      }));
+      setGalleryItems(prev => [...prev, ...newItems]);
     }
+    e.target.value = '';
+  };
+
+  const moveGalleryItem = (index: number, direction: 'left' | 'right') => {
+    setGalleryItems(prev => {
+      const targetIndex = direction === 'left' ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= prev.length) return prev;
+      const updated = [...prev];
+      const temp = updated[index];
+      updated[index] = updated[targetIndex];
+      updated[targetIndex] = temp;
+      return updated;
+    });
+  };
+
+  const removeGalleryItem = (index: number) => {
+    setGalleryItems(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleGalleryDragStart = (index: number) => {
+    setDraggedGalleryIndex(index);
+  };
+
+  const handleGalleryDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+  };
+
+  const handleGalleryDrop = (index: number) => {
+    if (draggedGalleryIndex === null || draggedGalleryIndex === index) return;
+    setGalleryItems(prev => {
+      const updated = [...prev];
+      const [movedItem] = updated.splice(draggedGalleryIndex, 1);
+      updated.splice(index, 0, movedItem);
+      return updated;
+    });
+    setDraggedGalleryIndex(null);
   };
 
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -203,13 +243,19 @@ export default function AdminPage() {
     setItemWeight(product.weight || '');
     setItemIsAvailable(product.isAvailable !== false);
     setItemImage(product.image);
-    setItemImages(product.images || []);
+    if (product.images && product.images.length > 0) {
+      setGalleryItems(product.images.map((url, idx) => ({
+        id: `existing-${idx}-${Date.now()}`,
+        type: 'existing' as const,
+        url
+      })));
+    } else {
+      setGalleryItems([]);
+    }
     setItemVideo(product.video || '');
     setItemDescription(product.description);
     setImageFile(null);
     setImagePreviewUrl(null);
-    setGalleryFiles([]);
-    setGalleryPreviewUrls([]);
     setVideoFile(null);
     setVideoPreviewUrl(null);
     setFormMessage(null);
@@ -273,13 +319,11 @@ export default function AdminPage() {
     setItemWeight('');
     setItemIsAvailable(true);
     setItemImage('/images/navratri.png');
-    setItemImages([]);
+    setGalleryItems([]);
     setItemVideo('');
     setItemDescription('');
     setImageFile(null);
     setImagePreviewUrl(null);
-    setGalleryFiles([]);
-    setGalleryPreviewUrls([]);
     setVideoFile(null);
     setVideoPreviewUrl(null);
     setFormMessage(null);
@@ -357,15 +401,19 @@ export default function AdminPage() {
         imageUrl = await uploadProductImage(imageFile);
       }
 
-      // 2. Upload multiple gallery files if selected
-      let uploadedGalleryUrls: string[] = [...itemImages];
-      if (galleryFiles && galleryFiles.length > 0) {
-        setFormMessage(`Uploading ${galleryFiles.length} gallery images...`);
-        uploadedGalleryUrls = [];
-        for (let i = 0; i < galleryFiles.length; i++) {
-          const file = galleryFiles[i];
-          const url = await uploadProductImage(file);
-          uploadedGalleryUrls.push(url);
+      // 2. Upload and sequence multiple gallery images
+      const uploadedGalleryUrls: string[] = [];
+      if (galleryItems.length > 0) {
+        setFormMessage(`Processing ${galleryItems.length} gallery images...`);
+        for (let i = 0; i < galleryItems.length; i++) {
+          const item = galleryItems[i];
+          if (item.type === 'existing') {
+            uploadedGalleryUrls.push(item.url);
+          } else if (item.file) {
+            setFormMessage(`Uploading gallery photo ${i + 1} of ${galleryItems.length}...`);
+            const url = await uploadProductImage(item.file);
+            uploadedGalleryUrls.push(url);
+          }
         }
       }
 
@@ -483,12 +531,10 @@ export default function AdminPage() {
       setItemWeight('');
       setItemDescription('');
       setItemImage('/images/navratri.png');
-      setItemImages([]);
+      setGalleryItems([]);
       setItemVideo('');
       setImageFile(null);
       setImagePreviewUrl(null);
-      setGalleryFiles([]);
-      setGalleryPreviewUrls([]);
       setVideoFile(null);
       setVideoPreviewUrl(null);
 
@@ -983,7 +1029,7 @@ export default function AdminPage() {
                   </div>
 
                   <div className="form-group">
-                    <label className="form-label">Upload Product Image</label>
+                    <label className="form-label">Upload Main Product Image (Primary Cover Photo)</label>
                     <input
                       type="file"
                       className="form-input"
@@ -992,33 +1038,74 @@ export default function AdminPage() {
                       style={{ display: 'block', padding: '0.5rem' }}
                     />
                     
-                    {imagePreviewUrl ? (
-                      <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <div style={{ width: '60px', height: '60px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--color-border-gold)', position: 'relative' }}>
-                          <img src={imagePreviewUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        </div>
-                        <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Photo loaded successfully</span>
-                      </div>
-                    ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
-                        <label className="form-label" style={{ fontSize: '0.75rem' }}>Or Select Preset Backup Graphic</label>
-                        <select
-                          className="form-select"
-                          value={itemImage}
-                          onChange={(e) => setItemImage(e.target.value)}
+                    {(imagePreviewUrl || itemImage) && (
+                      <div style={{ marginTop: '0.6rem' }}>
+                        <div 
+                          style={{ 
+                            position: 'relative', 
+                            width: '65px', 
+                            height: '65px', 
+                            borderRadius: '8px', 
+                            border: '1px solid var(--color-border-gold)',
+                            cursor: 'pointer' 
+                          }}
+                          onClick={() => setPreviewModalUrl(imagePreviewUrl || itemImage)}
+                          title="Click to view image in popup"
                         >
-                          <option value="/images/navratri.png">Chaniya Choli preset 1 (Vibrant model)</option>
-                          <option value="/images/bridal.png">Chaniya Choli preset 2 (Red Silk model)</option>
-                          <option value="/images/pastel.png">Chaniya Choli preset 3 (Pastel model)</option>
-                          <option value="/images/home_decor.png">Home Decor preset</option>
-                          <option value="/images/cushion_cover.png">Cushion Cover preset</option>
-                        </select>
+                          <img 
+                            src={imagePreviewUrl || itemImage} 
+                            alt="Main product photo" 
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} 
+                          />
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setImageFile(null);
+                              setImagePreviewUrl(null);
+                              setItemImage('');
+                            }}
+                            style={{
+                              position: 'absolute',
+                              top: '-6px',
+                              right: '-6px',
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '50%',
+                              background: '#e74c3c',
+                              color: 'white',
+                              border: 'none',
+                              fontSize: '13px',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                              zIndex: 3
+                            }}
+                            title="Remove Main Image"
+                          >
+                            &times;
+                          </button>
+                        </div>
                       </div>
                     )}
+
                   </div>
 
                   <div className="form-group">
-                    <label className="form-label">Upload Gallery Images (Inner View Card Images)</label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
+                      <label className="form-label" style={{ marginBottom: 0 }}>
+                        Upload Gallery Images (Inner View Card Images)
+                      </label>
+                      {galleryItems.length > 0 && (
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-primary, #c5a059)' }}>
+                          {galleryItems.length} {galleryItems.length === 1 ? 'image' : 'images'} in sequence
+                        </span>
+                      )}
+                    </div>
+                    
                     <input
                       type="file"
                       className="form-input"
@@ -1027,84 +1114,188 @@ export default function AdminPage() {
                       onChange={handleGalleryChange}
                       style={{ display: 'block', padding: '0.5rem' }}
                     />
-                    {galleryPreviewUrls.length > 0 ? (
-                      <div>
-                        <label className="form-label" style={{ fontSize: '0.75rem', marginTop: '0.5rem' }}>Newly Selected Gallery Images ({galleryPreviewUrls.length})</label>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem', marginTop: '0.2rem' }}>
-                          {galleryPreviewUrls.map((url, idx) => (
-                            <div key={idx} style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '8px', border: '1px solid var(--color-border-gold)' }}>
-                              <img src={url} alt={`Gallery preview ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setGalleryFiles(prev => prev.filter((_, i) => i !== idx));
-                                  setGalleryPreviewUrls(prev => prev.filter((_, i) => i !== idx));
-                                }}
-                                style={{
-                                  position: 'absolute',
-                                  top: '-6px',
-                                  right: '-6px',
-                                  width: '18px',
-                                  height: '18px',
-                                  borderRadius: '50%',
-                                  background: '#e74c3c',
-                                  color: 'white',
-                                  border: 'none',
-                                  fontSize: '12px',
-                                  fontWeight: 'bold',
-                                  cursor: 'pointer',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                                }}
-                                title="Remove Selected Image"
-                              >
-                                &times;
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
+                    <p style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', marginTop: '0.3rem', marginBottom: '0.6rem' }}>
+                      Select multiple images at once or add more files step-by-step. Reorder using <strong>&larr;</strong> / <strong>&rarr;</strong> or by dragging cards.
+                    </p>
 
-                    {itemImages.length > 0 ? (
-                      <div style={{ marginTop: '0.8rem' }}>
-                        <label className="form-label" style={{ fontSize: '0.75rem' }}>Saved Gallery Images ({itemImages.length})</label>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem', marginTop: '0.2rem' }}>
-                          {itemImages.map((url, idx) => (
-                            <div key={idx} style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '8px', border: '1px solid var(--color-border-gold)' }}>
-                              <img src={url} alt={`Current gallery ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
-                              <button
-                                type="button"
-                                onClick={() => setItemImages(prev => prev.filter((_, i) => i !== idx))}
+                    {galleryItems.length > 0 && (
+                      <div style={{ marginTop: '0.5rem' }}>
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))',
+                            gap: '0.8rem',
+                            marginTop: '0.4rem',
+                          }}
+                        >
+                          {galleryItems.map((item, idx) => (
+                            <div
+                              key={item.id}
+                              draggable
+                              onDragStart={() => handleGalleryDragStart(idx)}
+                              onDragOver={(e) => handleGalleryDragOver(e, idx)}
+                              onDrop={() => handleGalleryDrop(idx)}
+                              style={{
+                                position: 'relative',
+                                borderRadius: '8px',
+                                border: draggedGalleryIndex === idx ? '2px dashed #c5a059' : '1px solid var(--color-border-gold, #c5a059)',
+                                background: 'rgba(255, 255, 255, 0.03)',
+                                padding: '0.4rem',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                cursor: 'grab',
+                                opacity: draggedGalleryIndex === idx ? 0.5 : 1,
+                                transition: 'all 0.15s ease',
+                                boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+                              }}
+                            >
+                              {/* Position Sequence Badge */}
+                              <div
                                 style={{
                                   position: 'absolute',
-                                  top: '-6px',
-                                  right: '-6px',
-                                  width: '18px',
-                                  height: '18px',
-                                  borderRadius: '50%',
-                                  background: '#e74c3c',
-                                  color: 'white',
-                                  border: 'none',
-                                  fontSize: '12px',
+                                  top: '6px',
+                                  left: '6px',
+                                  background: 'rgba(0,0,0,0.75)',
+                                  color: '#f39c12',
+                                  borderRadius: '4px',
+                                  padding: '1px 5px',
+                                  fontSize: '10px',
                                   fontWeight: 'bold',
-                                  cursor: 'pointer',
+                                  zIndex: 2,
+                                  border: '1px solid rgba(243, 156, 18, 0.4)'
+                                }}
+                              >
+                                #{idx + 1}
+                              </div>
+
+                              {/* Type Pill (New vs Saved) */}
+                              <div
+                                style={{
+                                  position: 'absolute',
+                                  top: '6px',
+                                  right: '6px',
+                                  background: item.type === 'new' ? '#27ae60' : '#2980b9',
+                                  color: '#ffffff',
+                                  borderRadius: '4px',
+                                  padding: '1px 5px',
+                                  fontSize: '9px',
+                                  fontWeight: 'bold',
+                                  zIndex: 2,
+                                  textTransform: 'uppercase'
+                                }}
+                              >
+                                {item.type}
+                              </div>
+
+                              {/* Thumbnail */}
+                              <div
+                                style={{
+                                  width: '100%',
+                                  height: '80px',
+                                  position: 'relative',
+                                  borderRadius: '6px',
+                                  overflow: 'hidden',
+                                  marginTop: '1.2rem',
+                                  marginBottom: '0.4rem',
+                                  background: '#000',
+                                  cursor: 'pointer'
+                                }}
+                                onClick={() => setPreviewModalUrl(item.url)}
+                                title="Click to view image in popup"
+                              >
+                                <img
+                                  src={item.url}
+                                  alt={`Gallery sequence #${idx + 1}`}
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                />
+                              </div>
+
+                              {/* Control Bar: Move Left, Move Right, Remove */}
+                              <div
+                                style={{
                                   display: 'flex',
                                   alignItems: 'center',
-                                  justifyContent: 'center',
-                                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                  justifyContent: 'space-between',
+                                  width: '100%',
+                                  marginTop: 'auto',
+                                  paddingTop: '0.2rem',
+                                  borderTop: '1px solid rgba(255,255,255,0.08)'
                                 }}
-                                title="Delete Saved Image"
                               >
-                                &times;
-                              </button>
+                                <button
+                                  type="button"
+                                  onClick={() => moveGalleryItem(idx, 'left')}
+                                  disabled={idx === 0}
+                                  style={{
+                                    background: idx === 0 ? 'rgba(255,255,255,0.1)' : 'var(--color-primary, #c5a059)',
+                                    color: idx === 0 ? '#888' : '#000',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    width: '24px',
+                                    height: '24px',
+                                    fontSize: '12px',
+                                    fontWeight: 'bold',
+                                    cursor: idx === 0 ? 'not-allowed' : 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                  }}
+                                  title="Move item left in sequence"
+                                >
+                                  &larr;
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => moveGalleryItem(idx, 'right')}
+                                  disabled={idx === galleryItems.length - 1}
+                                  style={{
+                                    background: idx === galleryItems.length - 1 ? 'rgba(255,255,255,0.1)' : 'var(--color-primary, #c5a059)',
+                                    color: idx === galleryItems.length - 1 ? '#888' : '#000',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    width: '24px',
+                                    height: '24px',
+                                    fontSize: '12px',
+                                    fontWeight: 'bold',
+                                    cursor: idx === galleryItems.length - 1 ? 'not-allowed' : 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                  }}
+                                  title="Move item right in sequence"
+                                >
+                                  &rarr;
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => removeGalleryItem(idx)}
+                                  style={{
+                                    background: '#e74c3c',
+                                    color: '#fff',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    width: '24px',
+                                    height: '24px',
+                                    fontSize: '14px',
+                                    fontWeight: 'bold',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                  }}
+                                  title="Remove from sequence"
+                                >
+                                  &times;
+                                </button>
+                              </div>
                             </div>
                           ))}
                         </div>
                       </div>
-                    ) : null}
+                    )}
                   </div>
 
                   <div className="form-group">
@@ -1594,6 +1785,82 @@ export default function AdminPage() {
           </section>
         </div>
       </main>
+
+      {/* Full Image Preview Modal / Popup */}
+      {previewModalUrl && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem'
+          }}
+          onClick={() => setPreviewModalUrl(null)}
+        >
+          <div
+            style={{
+              position: 'relative',
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              background: '#141414',
+              borderRadius: '12px',
+              border: '1px solid var(--color-border-gold, #c5a059)',
+              padding: '0.8rem',
+              boxShadow: '0 12px 40px rgba(0, 0, 0, 0.7)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setPreviewModalUrl(null)}
+              style={{
+                position: 'absolute',
+                top: '-12px',
+                right: '-12px',
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                background: '#e74c3c',
+                color: '#ffffff',
+                border: '2px solid #ffffff',
+                fontSize: '18px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 10px rgba(0,0,0,0.4)',
+                zIndex: 10
+              }}
+              title="Close Preview"
+            >
+              &times;
+            </button>
+            <img
+              src={previewModalUrl}
+              alt="Full view preview"
+              style={{
+                maxWidth: '85vw',
+                maxHeight: '80vh',
+                objectFit: 'contain',
+                borderRadius: '8px',
+                display: 'block'
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
