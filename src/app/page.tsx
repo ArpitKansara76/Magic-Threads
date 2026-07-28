@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { products as initialProducts, Product } from '../data/products';
 import { supabase } from '../utils/supabase/client';
 import { Hero3DCanvas } from '../components/Hero3DCanvas';
+import { ImageLightbox } from '../components/ImageLightbox';
 
 // Configurable seller phone number (with country code, e.g., +91 for India)
 const SELLER_WHATSAPP_NUMBER = '918980082662';
@@ -27,6 +28,20 @@ export default function CatalogPage() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [activeMedia, setActiveMedia] = useState<{ type: 'image' | 'video', url: string } | null>(null);
+  const [isMainMediaLoading, setIsMainMediaLoading] = useState<boolean>(true);
+
+  // Lightbox State
+  const [lightboxImages, setLightboxImages] = useState<string[]>([]);
+  const [lightboxIndex, setLightboxIndex] = useState<number>(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState<boolean>(false);
+
+  const openLightbox = (imagesList: string[], startIndex: number = 0) => {
+    if (!imagesList || imagesList.length === 0) return;
+    const uniqueImages = Array.from(new Set(imagesList.filter(Boolean)));
+    setLightboxImages(uniqueImages);
+    setLightboxIndex(Math.min(startIndex, uniqueImages.length - 1));
+    setIsLightboxOpen(true);
+  };
 
   // Inquiry Modals
   const [inquiryProduct, setInquiryProduct] = useState<Product | null>(null);
@@ -166,6 +181,7 @@ export default function CatalogPage() {
     setSelectedProduct(product);
     setActiveDetailTab('details');
     setActiveSpecSubTab('lehenga');
+    setIsMainMediaLoading(true);
     if (product.video) {
       setActiveMedia({ type: 'video', url: product.video });
     } else {
@@ -452,6 +468,31 @@ export default function CatalogPage() {
                   onClick={() => !isComingSoon && openProductDetails(product)}
                   style={{ cursor: isComingSoon ? 'default' : 'pointer' }}
                 >
+                  {/* Quick Photo Zoom Button */}
+                  <div
+                    className="product-card-zoom-badge"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const mediaItems: string[] = [];
+                      if (product.video) mediaItems.push(product.video);
+                      mediaItems.push(product.image);
+                      if (product.images) {
+                        product.images.forEach((img) => {
+                          if (img !== product.image) mediaItems.push(img);
+                        });
+                      }
+                      openLightbox(mediaItems, 0);
+                    }}
+                    title="Click to view media full size"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="11" cy="11" r="8" />
+                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                      <line x1="11" y1="8" x2="11" y2="14" />
+                      <line x1="8" y1="11" x2="14" y2="11" />
+                    </svg>
+                  </div>
+
                   {/* Top-Right Diagonal Cross Corner Ribbon */}
                   {!isComingSoon && (
                     <div className="corner-ribbon-wrapper">
@@ -626,7 +667,30 @@ export default function CatalogPage() {
 
             <div className="modal-content-details">
               <div className="modal-image-panel">
-                <div className="modal-main-image-wrapper">
+                <div
+                  className={`modal-main-image-wrapper ${activeMedia?.type === 'video' ? 'video-active' : 'zoomable'}`}
+                  onClick={() => {
+                    if (activeMedia && activeMedia.type === 'video') return;
+                    const mediaItems: string[] = [];
+                    if (selectedProduct.video) mediaItems.push(selectedProduct.video);
+                    mediaItems.push(selectedProduct.image);
+                    if (selectedProduct.images) {
+                      selectedProduct.images.forEach((img) => {
+                        if (img !== selectedProduct.image) mediaItems.push(img);
+                      });
+                    }
+                    const currentUrl = activeMedia?.url || selectedProduct.image;
+                    const foundIdx = mediaItems.indexOf(currentUrl);
+                    openLightbox(mediaItems, foundIdx >= 0 ? foundIdx : 0);
+                  }}
+                >
+                  {isMainMediaLoading && (
+                    <div className="media-loader-overlay">
+                      <div className="media-loader-spinner" />
+                      <span className="media-loader-text">Loading Media...</span>
+                    </div>
+                  )}
+
                   {activeMedia && activeMedia.type === 'video' ? (
                     <video
                       src={activeMedia.url}
@@ -634,7 +698,15 @@ export default function CatalogPage() {
                       autoPlay
                       loop
                       muted
+                      playsInline
+                      onLoadedData={() => setIsMainMediaLoading(false)}
+                      onCanPlay={() => setIsMainMediaLoading(false)}
+                      onError={() => setIsMainMediaLoading(false)}
                       className="modal-main-video"
+                      style={{
+                        opacity: isMainMediaLoading ? 0 : 1,
+                        transition: 'opacity 0.25s ease',
+                      }}
                     />
                   ) : (
                     <Image
@@ -643,7 +715,14 @@ export default function CatalogPage() {
                       width={400}
                       height={500}
                       className="modal-main-image"
+                      onLoadingComplete={() => setIsMainMediaLoading(false)}
+                      onLoad={() => setIsMainMediaLoading(false)}
+                      onError={() => setIsMainMediaLoading(false)}
                       priority
+                      style={{
+                        opacity: isMainMediaLoading ? 0.3 : 1,
+                        transition: 'opacity 0.25s ease',
+                      }}
                     />
                   )}
                 </div>
@@ -655,7 +734,10 @@ export default function CatalogPage() {
                     {selectedProduct.video && (
                       <div
                         className={`thumbnail-item ${activeMedia?.type === 'video' ? 'active' : ''}`}
-                        onClick={() => setActiveMedia({ type: 'video', url: selectedProduct.video! })}
+                        onClick={() => {
+                          setIsMainMediaLoading(true);
+                          setActiveMedia({ type: 'video', url: selectedProduct.video! });
+                        }}
                       >
                         <img
                           src={selectedProduct.image}
@@ -673,7 +755,10 @@ export default function CatalogPage() {
                     {/* Primary Image Thumbnail */}
                     <div
                       className={`thumbnail-item ${activeMedia?.type === 'image' && activeMedia.url === selectedProduct.image ? 'active' : ''}`}
-                      onClick={() => setActiveMedia({ type: 'image', url: selectedProduct.image })}
+                      onClick={() => {
+                        setIsMainMediaLoading(true);
+                        setActiveMedia({ type: 'image', url: selectedProduct.image });
+                      }}
                     >
                       <img
                         src={selectedProduct.image}
@@ -690,7 +775,10 @@ export default function CatalogPage() {
                         <div
                           key={idx}
                           className={`thumbnail-item ${activeMedia?.type === 'image' && activeMedia.url === imgUrl ? 'active' : ''}`}
-                          onClick={() => setActiveMedia({ type: 'image', url: imgUrl })}
+                          onClick={() => {
+                            setIsMainMediaLoading(true);
+                            setActiveMedia({ type: 'image', url: imgUrl });
+                          }}
                         >
                           <img
                             src={imgUrl}
@@ -1402,6 +1490,15 @@ export default function CatalogPage() {
           {toastMessage}
         </div>
       )}
+      {/* PHOTO LIGHTBOX GALLERY MODAL */}
+      <ImageLightbox
+        images={lightboxImages}
+        currentIndex={lightboxIndex}
+        isOpen={isLightboxOpen}
+        onClose={() => setIsLightboxOpen(false)}
+        onIndexChange={(newIdx) => setLightboxIndex(newIdx)}
+        title={selectedProduct?.name}
+      />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { supabase, uploadProductImage } from '../../utils/supabase/client';
 import { Product } from '../../data/products';
+import { ImageLightbox } from '../../components/ImageLightbox';
 
 const formatCategory = (cat: string) => {
   if (cat === 'chaniya-choli') return 'Chaniya Choli';
@@ -1787,80 +1788,14 @@ export default function AdminPage() {
       </main>
 
       {/* Full Image Preview Modal / Popup */}
-      {previewModalUrl && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.85)',
-            backdropFilter: 'blur(5px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 99999,
-            padding: '1.5rem'
-          }}
-          onClick={() => setPreviewModalUrl(null)}
-        >
-          <div
-            style={{
-              position: 'relative',
-              maxWidth: '90vw',
-              maxHeight: '90vh',
-              background: '#141414',
-              borderRadius: '12px',
-              border: '1px solid var(--color-border-gold, #c5a059)',
-              padding: '0.8rem',
-              boxShadow: '0 12px 40px rgba(0, 0, 0, 0.7)',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              onClick={() => setPreviewModalUrl(null)}
-              style={{
-                position: 'absolute',
-                top: '-12px',
-                right: '-12px',
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                background: '#e74c3c',
-                color: '#ffffff',
-                border: '2px solid #ffffff',
-                fontSize: '18px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 4px 10px rgba(0,0,0,0.4)',
-                zIndex: 10
-              }}
-              title="Close Preview"
-            >
-              &times;
-            </button>
-            <img
-              src={previewModalUrl}
-              alt="Full view preview"
-              style={{
-                maxWidth: '85vw',
-                maxHeight: '80vh',
-                objectFit: 'contain',
-                borderRadius: '8px',
-                display: 'block'
-              }}
-            />
-          </div>
-        </div>
-      )}
+      {/* PHOTO LIGHTBOX GALLERY MODAL */}
+      <ImageLightbox
+        images={previewModalUrl ? [previewModalUrl] : []}
+        currentIndex={0}
+        isOpen={Boolean(previewModalUrl)}
+        onClose={() => setPreviewModalUrl(null)}
+        onIndexChange={() => {}}
+      />
     </div>
   );
 }
